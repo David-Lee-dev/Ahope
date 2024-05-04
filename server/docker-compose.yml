@@ -1,0 +1,12 @@
+services:
+  postgres:
+    image: postgres:16.2
+    restart: always
+    volumes:
+      - /Users/squarezero/workspace/db/dev-db/gacha-dev:/var/lib/postgresql/data
+    ports:
+      - "9000:5432"
+    environment:
+      POSTGRES_USER: gacha
+      POSTGRES_PASSWORD: gacha
+      POSTGRES_DB: gacha
