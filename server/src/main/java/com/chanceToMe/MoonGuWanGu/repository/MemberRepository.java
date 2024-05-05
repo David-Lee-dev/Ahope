@@ -4,17 +4,13 @@ import com.chanceToMe.MoonGuWanGu.model.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-
-import javax.sql.DataSource;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
+@Transactional
 public class MemberRepository {
-    private JdbcTemplate jdbcTemplate;
-
     @Autowired
-    public void setDataSource(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
-    }
+    private JdbcTemplate jdbcTemplate;
 
     public Member insert(Member member) {
         String query = "insert into member (id, email, last_gacha_timestamp, remain_ticket) values (?, ?, ?, ?)";
