@@ -1,5 +1,7 @@
 package com.chanceToMe.MoonGuWanGu.repository;
 
+import com.chanceToMe.MoonGuWanGu.common.enums.ErrorCode;
+import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.MetaData;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +50,7 @@ public class MetaDataRepository {
     if (affectedNum == 1) {
       return metaData;
     } else {
-      throw new RuntimeException();
+      throw new CustomException(ErrorCode.NON_EXISTED);
     }
   }
 
@@ -60,7 +62,7 @@ public class MetaDataRepository {
     if (affectedNum == 1) {
       return id;
     } else {
-      throw new RuntimeException();
+      throw new CustomException(ErrorCode.NON_EXISTED);
     }
   }
 }

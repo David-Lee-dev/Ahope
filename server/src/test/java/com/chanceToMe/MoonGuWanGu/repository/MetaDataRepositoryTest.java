@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
+import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.MetaData;
 import java.sql.Connection;
 import java.util.UUID;
@@ -134,14 +135,14 @@ class MetaDataRepositoryTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 MetaData에 대해 RuntimeException 발생")
+    @DisplayName("존재하지 않는 MetaData에 대해 CustomException 발생")
     void nonExisted() {
       MetaData metaDataForUpdate = MetaData.builder().id(nonExistedUUID).imageUrl(updateImageUrl)
                                            .category(updateCategory).count(updateCount)
                                            .grade(updateGrade).build();
 
       assertThatThrownBy(() -> metaDataRepository.update(metaDataForUpdate)).isInstanceOf(
-          RuntimeException.class);
+          CustomException.class);
     }
   }
 
@@ -165,10 +166,10 @@ class MetaDataRepositoryTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 MetaData에 대해 RuntimeException 발생")
+    @DisplayName("존재하지 않는 MetaData에 대해 CustomException 발생")
     void nonExisted() {
       assertThatThrownBy(() -> metaDataRepository.delete(nonExistedUUID)).isInstanceOf(
-          RuntimeException.class);
+          CustomException.class);
     }
   }
 

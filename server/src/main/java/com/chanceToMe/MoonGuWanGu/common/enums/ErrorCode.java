@@ -7,14 +7,15 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
-    //Database
-    DUPLICATED_KEY(HttpStatus.BAD_REQUEST, "DB-001", "a key is duplicated"),
+  //Database
+  DUPLICATED_KEY(HttpStatus.BAD_REQUEST, "DB-001", "a key is duplicated"),
 
-    //common
-    UNKNOWN(HttpStatus.INTERNAL_SERVER_ERROR, "C-001", "unknown error"),
-    INVALID(HttpStatus.BAD_REQUEST, "C-002", "validation error");
+  //common
+  UNKNOWN(HttpStatus.INTERNAL_SERVER_ERROR, "C-001", "unknown error"),
+  INVALID(HttpStatus.BAD_REQUEST, "C-002", "validation error"),
+  NON_EXISTED(HttpStatus.NOT_FOUND, "C-003", "non existed resource");
 
-    private final HttpStatus httpStatus;
-    private final String code;
-    private final String message;
+  private final HttpStatus httpStatus;
+  private final String code;
+  private final String message;
 }

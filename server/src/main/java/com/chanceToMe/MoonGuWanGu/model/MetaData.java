@@ -13,14 +13,14 @@ public class MetaData {
 
   String imageUrl;
 
-  int count;
+  Integer count;
 
-  int grade;
+  Integer grade;
 
   String category;
 
   @Builder
-  public MetaData(UUID id, String imageUrl, int count, int grade, String category) {
+  public MetaData(UUID id, String imageUrl, Integer count, Integer grade, String category) {
     this.id = id;
     this.imageUrl = imageUrl;
     this.count = count;
