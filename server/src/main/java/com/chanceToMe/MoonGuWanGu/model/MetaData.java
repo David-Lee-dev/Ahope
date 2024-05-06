@@ -8,23 +8,30 @@ import org.springframework.data.annotation.Id;
 @Getter
 public class MetaData {
 
-  @Id
-  UUID id;
+    @Id
+    UUID id;
 
-  String imageUrl;
+    String imageUrl;
 
-  Integer count;
+    Integer count;
 
-  Integer grade;
+    Integer grade;
 
-  String category;
+    Integer weight;
 
-  @Builder
-  public MetaData(UUID id, String imageUrl, Integer count, Integer grade, String category) {
-    this.id = id;
-    this.imageUrl = imageUrl;
-    this.count = count;
-    this.grade = grade;
-    this.category = category;
-  }
+    Boolean active;
+
+    String category;
+
+    @Builder
+    public MetaData(UUID id, String imageUrl, Integer count, Integer grade, Integer weight,
+        Boolean active, String category) {
+        this.id = id;
+        this.imageUrl = imageUrl;
+        this.count = count;
+        this.grade = grade;
+        this.weight = weight;
+        this.active = active;
+        this.category = category;
+    }
 }

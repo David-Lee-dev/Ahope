@@ -1,19 +1,28 @@
 package com.chanceToMe.MoonGuWanGu.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
+
 import com.chanceToMe.MoonGuWanGu.model.Member;
-import org.junit.jupiter.api.*;
+import java.sql.Connection;
+import java.util.UUID;
+import javax.sql.DataSource;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
@@ -25,6 +34,11 @@ class MemberRepositoryTest {
 
     @Autowired
     MemberRepository memberRepository;
+
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    UUID nonExistedUUID = UUID.fromString("a0000000-1000-4000-8000-900000000000");
 
     @BeforeAll
     public void beforeAll() throws Exception {
@@ -72,5 +86,43 @@ class MemberRepositoryTest {
 
             assertThatThrownBy(() -> memberRepository.insert(member2)).isInstanceOf(DuplicateKeyException.class);
         }
+    }
+
+    @Nested
+    @DisplayName("findById")
+    class FindByIdTest {
+
+        UUID testMemberId;
+
+        @BeforeEach
+        void beforeEach() {
+            testMemberId = insertTestMember();
+        }
+
+        @Test
+        @DisplayName("id로 MetaData 조회")
+        void ideal() {
+            Member result = memberRepository.findById(testMemberId);
+
+            assertThat(result.getId()).isEqualTo(testMemberId);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 경우 EmptyResultDataAccessException 예외 발생")
+        void nonExisted() {
+            EmptyResultDataAccessException exception = catchThrowableOfType(
+                () -> memberRepository.findById(nonExistedUUID),
+                EmptyResultDataAccessException.class);
+
+            assertThat(exception).isInstanceOf(EmptyResultDataAccessException.class);
+        }
+    }
+
+    private UUID insertTestMember() {
+        UUID testMetaDataId = UUID.randomUUID();
+        String query = "insert into member (id, email, last_gacha_timestamp, remain_ticket) values (?, ?, ?, ?)";
+        jdbcTemplate.update(query, testMetaDataId, "test@email.com", 0, 0);
+
+        return testMetaDataId;
     }
 }
