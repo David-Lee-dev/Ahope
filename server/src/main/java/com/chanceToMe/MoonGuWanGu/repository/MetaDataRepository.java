@@ -30,13 +30,9 @@ public class MetaDataRepository {
     String query = "select * from metadata where id = ?";
 
     return jdbcTemplate.queryForObject(query, (rs, rowNum) -> {
-      return MetaData.builder()
-                     .id(UUID.fromString(rs.getString("id")))
-                     .imageUrl(rs.getString("image_url"))
-                     .category(rs.getString("category"))
-                     .count(rs.getInt("count"))
-                     .grade(rs.getInt("grade"))
-                     .build();
+      return MetaData.builder().id(UUID.fromString(rs.getString("id")))
+                     .imageUrl(rs.getString("image_url")).category(rs.getString("category"))
+                     .count(rs.getInt("count")).grade(rs.getInt("grade")).build();
 
     }, id);
   }
@@ -45,13 +41,9 @@ public class MetaDataRepository {
     String query = "select * from metadata where category = ?";
 
     return jdbcTemplate.query(query, (rs, rowNum) -> {
-      return MetaData.builder()
-                     .id(UUID.fromString(rs.getString("id")))
-                     .imageUrl(rs.getString("image_url"))
-                     .category(rs.getString("category"))
-                     .count(rs.getInt("count"))
-                     .grade(rs.getInt("grade"))
-                     .build();
+      return MetaData.builder().id(UUID.fromString(rs.getString("id")))
+                     .imageUrl(rs.getString("image_url")).category(rs.getString("category"))
+                     .count(rs.getInt("count")).grade(rs.getInt("grade")).build();
 
     }, category);
   }
@@ -60,13 +52,12 @@ public class MetaDataRepository {
     String query = "update metadata set image_url = ?, count = ?, grade = ?, category = ? where id = ?";
 
     int affectedNum = jdbcTemplate.update(query, metaData.getImageUrl(), metaData.getCount(),
-        metaData.getGrade(),
-        metaData.getCategory(), metaData.getId());
+        metaData.getGrade(), metaData.getCategory(), metaData.getId());
 
     if (affectedNum == 1) {
       return metaData;
     } else {
-      throw new CustomException(ErrorCode.NON_EXISTED);
+      throw new CustomException(ErrorCode.NON_EXISTED, null);
     }
   }
 
@@ -78,7 +69,7 @@ public class MetaDataRepository {
     if (affectedNum == 1) {
       return id;
     } else {
-      throw new CustomException(ErrorCode.NON_EXISTED);
+      throw new CustomException(ErrorCode.NON_EXISTED, null);
     }
   }
 }

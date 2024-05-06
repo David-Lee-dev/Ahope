@@ -23,12 +23,12 @@ public class MetaDataService {
                                   .grade(Math.max(grade, 0)).category(category).build();
 
       return metaDataRepository.insert(metaData);
-
     } catch (Exception e) {
       if (e instanceof DuplicateKeyException) {
-        throw new CustomException(ErrorCode.DUPLICATED_KEY);
+        throw new CustomException(ErrorCode.DUPLICATED_KEY, e.getStackTrace());
       } else {
-        throw new CustomException(ErrorCode.UNKNOWN);
+        throw e;
+//        throw new CustomException(ErrorCode.UNKNOWN, e.getStackTrace());
       }
     }
   }
@@ -37,7 +37,7 @@ public class MetaDataService {
     List<MetaData> metaDataList = metaDataRepository.findByCategory(category);
 
     if (metaDataList.isEmpty()) {
-      throw new CustomException(ErrorCode.NON_EXISTED);
+      throw new CustomException(ErrorCode.NON_EXISTED, null);
     }
 
     return metaDataList;
@@ -62,9 +62,9 @@ public class MetaDataService {
       if (e instanceof CustomException) {
         throw e;
       } else if (e instanceof EmptyResultDataAccessException) {
-        throw new CustomException(ErrorCode.NON_EXISTED);
+        throw new CustomException(ErrorCode.NON_EXISTED, e.getStackTrace());
       } else {
-        throw new CustomException(ErrorCode.UNKNOWN);
+        throw new CustomException(ErrorCode.UNKNOWN, e.getStackTrace());
       }
     }
   }
@@ -76,7 +76,7 @@ public class MetaDataService {
       if (e instanceof CustomException) {
         throw e;
       } else {
-        throw new CustomException(ErrorCode.UNKNOWN);
+        throw new CustomException(ErrorCode.UNKNOWN, e.getStackTrace());
       }
     }
   }

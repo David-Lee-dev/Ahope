@@ -29,7 +29,6 @@ public class MetaDataController {
 
   @PostMapping
   public ResponseEntity add(@RequestBody @Valid CreateMetaDataDto dto) {
-
     metaDataService.addMetaData(dto.getImageUrl(), dto.getGrade(), dto.getCategory());
 
     return ResponseEntity.status(HttpStatus.CREATED).body(null);

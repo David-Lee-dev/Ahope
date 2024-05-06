@@ -25,7 +25,7 @@ public class MemberController {
   public ResponseEntity join(@RequestBody CreateMemberDto dto) {
 
     if (!isValidEmail(dto.getEmail())) {
-      throw new CustomException(ErrorCode.INVALID);
+      throw new CustomException(ErrorCode.INVALID, null);
     }
 
     memberService.createMember(dto.getEmail());

@@ -7,5 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class CustomException extends RuntimeException {
-    ErrorCode errorCode;
+
+  ErrorCode errorCode;
+  StackTraceElement[] stackTraceElement;
 }

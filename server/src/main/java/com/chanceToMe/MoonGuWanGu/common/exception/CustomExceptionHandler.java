@@ -15,7 +15,7 @@ public class CustomExceptionHandler {
       return ErrorResponseEntity.toResponseEntity(((CustomException) e).getErrorCode());
     } else {
       return ErrorResponseEntity.toResponseEntity(
-          (new CustomException(ErrorCode.INVALID).getErrorCode()));
+          (new CustomException(ErrorCode.INVALID, e.getStackTrace()).getErrorCode()));
     }
   }
 }

@@ -1,5 +1,6 @@
 package com.chanceToMe.MoonGuWanGu;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.chanceToMe.MoonGuWanGu.controller.MemberController;
@@ -63,10 +64,9 @@ class MoonGuWanGuApplicationTests {
       Map<String, String> requestBody = new HashMap<>();
       requestBody.put("email", "test@gmail.com");
 
-      mockMvc.perform(MockMvcRequestBuilders
-                 .post("/api/join")
-                 .contentType(MediaType.APPLICATION_JSON)
-                 .content(String.valueOf(new JSONObject(requestBody))))
+      mockMvc.perform(
+                 MockMvcRequestBuilders.post("/api/member").contentType(MediaType.APPLICATION_JSON)
+                                       .content(String.valueOf(new JSONObject(requestBody))))
              .andExpect(status().isCreated());
     }
 
@@ -76,10 +76,9 @@ class MoonGuWanGuApplicationTests {
       Map<String, String> requestBody = new HashMap<>();
       requestBody.put("email", "invalid email");
 
-      mockMvc.perform(MockMvcRequestBuilders
-                 .post("/api/join")
-                 .contentType(MediaType.APPLICATION_JSON)
-                 .content(String.valueOf(new JSONObject(requestBody))))
+      mockMvc.perform(
+                 MockMvcRequestBuilders.post("/api/member").contentType(MediaType.APPLICATION_JSON)
+                                       .content(String.valueOf(new JSONObject(requestBody))))
              .andExpect(status().isBadRequest());
     }
 
@@ -89,12 +88,107 @@ class MoonGuWanGuApplicationTests {
       Map<String, String> requestBody = new HashMap<>();
       requestBody.put("email", "duplicated@test.com");
 
-      mockMvc.perform(MockMvcRequestBuilders
-                 .post("/api/join")
-                 .contentType(MediaType.APPLICATION_JSON)
-                 .content(String.valueOf(new JSONObject(requestBody))))
+      mockMvc.perform(
+                 MockMvcRequestBuilders.post("/api/member").contentType(MediaType.APPLICATION_JSON)
+                                       .content(String.valueOf(new JSONObject(requestBody))))
+             .andExpect(status().isBadRequest());
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /api/metadata")
+  class AddMetaDataTest {
+
+    @Test
+    @DisplayName("정상 요청에 대해 201 응답")
+    void idealRequest() throws Exception {
+      Map<String, Object> requestBody = new HashMap<>();
+      requestBody.put("imageUrl", "test_image_url");
+      requestBody.put("grade", 0);
+      requestBody.put("category", "test_category");
+
+      mockMvc.perform(
+                 MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
+                                       .content(String.valueOf(new JSONObject(requestBody))))
+             .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("imageUrl 누락에 대해 400 응답")
+    void missingImageUrl() throws Exception {
+      Map<String, Object> requestBody = new HashMap<>();
+      requestBody.put("grade", 0);
+      requestBody.put("category", "test_category");
+
+      mockMvc.perform(
+                 MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
+                                       .content(String.valueOf(new JSONObject(requestBody))))
              .andExpect(status().isBadRequest());
     }
 
+    @Test
+    @DisplayName("grade 누락에 대해 400 응답")
+    void missingGrade() throws Exception {
+      Map<String, Object> requestBody = new HashMap<>();
+      requestBody.put("imageUrl", "test_image_url");
+      requestBody.put("category", "test_category");
+
+      mockMvc.perform(
+                 MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
+                                       .content(String.valueOf(new JSONObject(requestBody))))
+             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("category 누락에 대해 400 응답")
+    void missingCategory() throws Exception {
+      Map<String, Object> requestBody = new HashMap<>();
+      requestBody.put("imageUrl", "test_image_url");
+      requestBody.put("grade", 0);
+
+      mockMvc.perform(
+                 MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
+                                       .content(String.valueOf(new JSONObject(requestBody))))
+             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("5를 초과하는 grade에 대해 400 응답")
+    void gradeOverFive() throws Exception {
+      Map<String, Object> requestBody = new HashMap<>();
+      requestBody.put("imageUrl", "test_image_url");
+      requestBody.put("grade", 100);
+      requestBody.put("category", "test_category");
+
+      mockMvc.perform(
+                 MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
+                                       .content(String.valueOf(new JSONObject(requestBody))))
+             .andExpect(status().isBadRequest());
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /api/metadata")
+  class FindMetaDataTest {
+
+    @Test
+    @DisplayName("정상 요청에 대해 MetaData 리스트와 200 응답")
+    void idealRequest() throws Exception {
+      mockMvc.perform(
+                 MockMvcRequestBuilders.get("/api/metadata?category=category")
+                                       .contentType(MediaType.APPLICATION_JSON))
+             .andExpect(jsonPath(".list").isArray())
+             .andExpect(status().isOk());
+    }
+
+
+    @Test
+    @DisplayName("항목이 하나도 존재하지 않으면 404 응답")
+    void nonExistedCategory() throws Exception {
+      mockMvc.perform(
+                 MockMvcRequestBuilders.get("/api/metadata?category=non_existed_category")
+                                       .contentType(MediaType.APPLICATION_JSON))
+             .andExpect(status().isNotFound());
+    }
   }
 }
