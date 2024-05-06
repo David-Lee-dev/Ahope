@@ -28,3 +28,12 @@ VALUES
     ('d45b4219-f4c4-4b2b-bc5a-876ea85bd32e', 'image_url3', '0', '3', 'category'),
     ('a3e3d052-1c9d-40c4-83e7-936127cfbe15', 'image_url4', '0', '0', 'category'),
     ('d45b4219-f4c4-4b2b-bc5a-876ea85bd325', 'image_url5', '0', '3', 'category');
+
+CREATE TABLE card (
+    id UUID PRIMARY KEY,
+    seq BIGINT,
+    member UUID,
+    metadata UUID,
+    foreign key (member) references member (id),
+    foreign key (metadata) references metadata (id)
+);
