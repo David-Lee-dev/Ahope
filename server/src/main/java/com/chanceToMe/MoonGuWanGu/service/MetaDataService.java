@@ -4,6 +4,7 @@ import com.chanceToMe.MoonGuWanGu.common.enums.ErrorCode;
 import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.MetaData;
 import com.chanceToMe.MoonGuWanGu.repository.MetaDataRepository;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -30,6 +31,16 @@ public class MetaDataService {
         throw new CustomException(ErrorCode.UNKNOWN);
       }
     }
+  }
+
+  public List<MetaData> retrieveMetaDataByCategory(String category) {
+    List<MetaData> metaDataList = metaDataRepository.findByCategory(category);
+
+    if (metaDataList.isEmpty()) {
+      throw new CustomException(ErrorCode.NON_EXISTED);
+    }
+
+    return metaDataList;
   }
 
   public MetaData updateMetaData(UUID id, String imageUrl, Integer count, Integer grade,

@@ -3,12 +3,15 @@ package com.chanceToMe.MoonGuWanGu.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import com.chanceToMe.MoonGuWanGu.common.enums.ErrorCode;
 import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.MetaData;
 import com.chanceToMe.MoonGuWanGu.repository.MetaDataRepository;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -79,6 +82,36 @@ class MetaDataServiceTest {
 
       assertThat(exception).isInstanceOf(CustomException.class);
       assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.DUPLICATED_KEY);
+    }
+  }
+
+  @Nested
+  @DisplayName("retrieveMetaDataByCategory")
+  class RetrieveMetaDataByCategoryTest {
+
+    @Test
+    @DisplayName("category에 해당하는 MetaData 리스트 반환")
+    void ideal() {
+      List<MetaData> metaDataList = new ArrayList<>();
+      metaDataList.add(MetaData.builder().build());
+
+      when(metaDataRepository.findByCategory(anyString())).thenReturn(metaDataList);
+
+      List<MetaData> result = metaDataService.retrieveMetaDataByCategory("category");
+
+      assertThat(result.size()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("category에 해당하는 MetaData가 없는 경우 NON_EXISTED 예외 발생")
+    void nonExisted() {
+      when(metaDataRepository.findByCategory(anyString())).thenReturn(new ArrayList<>());
+
+      CustomException exception = catchThrowableOfType(
+          () -> metaDataService.retrieveMetaDataByCategory("category"), CustomException.class);
+
+      assertThat(exception).isInstanceOf(CustomException.class);
+      assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NON_EXISTED);
     }
   }
 

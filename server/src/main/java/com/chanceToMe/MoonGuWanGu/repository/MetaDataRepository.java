@@ -3,6 +3,7 @@ package com.chanceToMe.MoonGuWanGu.repository;
 import com.chanceToMe.MoonGuWanGu.common.enums.ErrorCode;
 import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.MetaData;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -38,6 +39,21 @@ public class MetaDataRepository {
                      .build();
 
     }, id);
+  }
+
+  public List<MetaData> findByCategory(String category) {
+    String query = "select * from metadata where category = ?";
+
+    return jdbcTemplate.query(query, (rs, rowNum) -> {
+      return MetaData.builder()
+                     .id(UUID.fromString(rs.getString("id")))
+                     .imageUrl(rs.getString("image_url"))
+                     .category(rs.getString("category"))
+                     .count(rs.getInt("count"))
+                     .grade(rs.getInt("grade"))
+                     .build();
+
+    }, category);
   }
 
   public MetaData update(MetaData metaData) {

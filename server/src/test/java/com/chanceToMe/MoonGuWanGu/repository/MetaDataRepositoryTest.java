@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.MetaData;
 import java.sql.Connection;
+import java.util.List;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
@@ -100,6 +101,28 @@ class MetaDataRepositoryTest {
           () -> metaDataRepository.findById(nonExistedUUID), EmptyResultDataAccessException.class);
 
       assertThat(exception).isInstanceOf(EmptyResultDataAccessException.class);
+    }
+  }
+
+  @Nested
+  @DisplayName("findByCategory")
+  class FindByCategoryTest {
+
+    String testCategory = "category";
+
+    @BeforeEach
+    void beforeEach() {
+      insertTestMetaData("image_url1", 0, 0, testCategory);
+      insertTestMetaData("image_url2", 0, 0, testCategory);
+      insertTestMetaData("image_url3", 0, 0, testCategory);
+    }
+
+    @Test
+    @DisplayName("category로 MetaData 조회")
+    void ideal() {
+      List<MetaData> result = metaDataRepository.findByCategory(testCategory);
+
+      assertThat(result.size()).isEqualTo(3);
     }
   }
 
