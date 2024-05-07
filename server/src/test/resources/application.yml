@@ -2,6 +2,8 @@ spring:
   datasource:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+#    url: jdbc:h2:tcp://localhost/~/workspace/db/test-db/gacha_test;MODE=LEGACY
+#    username: test
 server:
   port: 8081
 logging:

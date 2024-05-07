@@ -15,10 +15,10 @@ public class Card {
 
   private MetaData metaData;
 
-  private Long seq;
+  private Integer seq;
 
   @Builder
-  public Card(UUID id, Member member, MetaData metaData, Long seq) {
+  public Card(UUID id, Member member, MetaData metaData, Integer seq) {
     this.id = id;
     this.member = member;
     this.metaData = metaData;

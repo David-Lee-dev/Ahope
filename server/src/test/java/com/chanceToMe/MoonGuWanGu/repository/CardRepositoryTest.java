@@ -40,11 +40,8 @@ class CardRepositoryTest {
 
     UUID testMemberId = UUID.randomUUID();
     UUID testMetaDataId = UUID.randomUUID();
-    Member testMember = Member.builder().id(testMemberId).email("test@test.com").remainTicket(3)
-                              .lastGachaTimestamp(null).build();
-    MetaData testMetaData = MetaData.builder().id(testMetaDataId).id(testMetaDataId)
-                                    .imageUrl("test_image_url").count(0).grade(0)
-                                    .category("test_category").build();
+    Member testMember = new Member(testMemberId, "test@test.com", 0L, 0);
+    MetaData testMetaData = new MetaData(testMetaDataId, "test", 0, 0, 0, false, "test");
 
     @BeforeAll
     public void beforeAll() throws Exception {
@@ -58,9 +55,10 @@ class CardRepositoryTest {
                 testMember.getId(), testMember.getEmail(), testMember.getLastGachaTimestamp(),
                 testMember.getRemainTicket());
             jdbcTemplate.update(
-                "insert into metadata (id, image_url, count, grade, category) values (?, ?, ?, ?, ?)",
+                "insert into metadata (id, image_url, count, grade, weight, active, category) values (?, ?, ?, ?, ?, ?, ?)",
                 testMetaData.getId(), testMetaData.getImageUrl(), testMetaData.getCount(),
-                testMetaData.getGrade(), testMetaData.getCategory());
+                testMetaData.getGrade(), testMetaData.getWeight(), testMetaData.getActive(),
+                testMetaData.getCategory());
         }
     }
 
@@ -78,7 +76,7 @@ class CardRepositoryTest {
         @Test
         @DisplayName("Card 생성")
         void ideal() {
-            Card card = new Card(UUID.randomUUID(), testMember, testMetaData, 1L);
+            Card card = new Card(UUID.randomUUID(), testMember, testMetaData, 1);
 
             cardRepository.insert(card);
         }

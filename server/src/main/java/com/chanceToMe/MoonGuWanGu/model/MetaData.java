@@ -34,4 +34,8 @@ public class MetaData {
         this.active = active;
         this.category = category;
     }
+
+    public void increaseCount() {
+        this.count++;
+    }
 }

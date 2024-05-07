@@ -4,8 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
+import com.chanceToMe.MoonGuWanGu.common.enums.ErrorCode;
+import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.Member;
 import java.sql.Connection;
+import java.time.Instant;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
@@ -39,6 +42,8 @@ class MemberRepositoryTest {
     JdbcTemplate jdbcTemplate;
 
     UUID nonExistedUUID = UUID.fromString("a0000000-1000-4000-8000-900000000000");
+    String existedEmail = "existed@test.com";
+    String nonExistedEmail = "nonExisted@test.com";
 
     @BeforeAll
     public void beforeAll() throws Exception {
@@ -58,13 +63,15 @@ class MemberRepositoryTest {
     @DisplayName("insert")
     class InsertTest {
 
+        @BeforeEach
+        void beforeEach() {
+            insertTestMember(existedEmail);
+        }
+
         @Test
         @DisplayName("Member 생성")
         void idealInsert() {
-            Member member = Member.builder()
-                    .id(UUID.randomUUID())
-                    .email("test")
-                    .build();
+            Member member = Member.builder().id(UUID.randomUUID()).email(nonExistedEmail).build();
 
             memberRepository.insert(member);
         }
@@ -72,19 +79,10 @@ class MemberRepositoryTest {
         @Test
         @DisplayName("email 중복 시 DuplicateKeyException 예외 발생")
         void duplicatedEmail() {
-            Member member1 = Member.builder()
-                    .id(UUID.randomUUID())
-                    .email("test")
-                    .build();
-            Member member2 = Member.builder()
-                    .id(UUID.randomUUID())
-                    .email("test")
-                    .build();
+            Member member = Member.builder().id(UUID.randomUUID()).email(existedEmail).build();
 
-
-            memberRepository.insert(member1);
-
-            assertThatThrownBy(() -> memberRepository.insert(member2)).isInstanceOf(DuplicateKeyException.class);
+            assertThatThrownBy(() -> memberRepository.insert(member)).isInstanceOf(
+                DuplicateKeyException.class);
         }
     }
 
@@ -96,7 +94,7 @@ class MemberRepositoryTest {
 
         @BeforeEach
         void beforeEach() {
-            testMemberId = insertTestMember();
+            testMemberId = insertTestMember(existedEmail);
         }
 
         @Test
@@ -110,18 +108,54 @@ class MemberRepositoryTest {
         @Test
         @DisplayName("존재하지 않는 경우 EmptyResultDataAccessException 예외 발생")
         void nonExisted() {
-            EmptyResultDataAccessException exception = catchThrowableOfType(
-                () -> memberRepository.findById(nonExistedUUID),
+            assertThatThrownBy(() -> memberRepository.findById(nonExistedUUID)).isInstanceOf(
                 EmptyResultDataAccessException.class);
-
-            assertThat(exception).isInstanceOf(EmptyResultDataAccessException.class);
         }
     }
 
-    private UUID insertTestMember() {
+    @Nested
+    @DisplayName("update")
+    class UpdateTest {
+
+        UUID testMemberId;
+
+        @BeforeEach
+        void beforeEach() {
+            testMemberId = insertTestMember(existedEmail);
+        }
+
+        @Test
+        @DisplayName("Member 수정")
+        void ideal() {
+            Long timestamp = Instant.now().toEpochMilli();
+            Member member = new Member(testMemberId, "update@test.com", timestamp, 1);
+
+            Member result = memberRepository.update(member);
+
+            assertThat(result.getId()).isEqualTo(member.getId());
+            assertThat(result.getEmail()).isEqualTo(member.getEmail());
+            assertThat(result.getLastGachaTimestamp()).isEqualTo(member.getLastGachaTimestamp());
+            assertThat(result.getRemainTicket()).isEqualTo(member.getRemainTicket());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 Member일 경우 NON_EXISTED 예외 발생")
+        void duplicatedEmail() {
+            Long timestamp = Instant.now().toEpochMilli();
+            Member member = new Member(nonExistedUUID, existedEmail, timestamp, 1);
+
+            CustomException exception = catchThrowableOfType(() -> memberRepository.update(member),
+                CustomException.class);
+
+            assertThat(exception).isInstanceOf(CustomException.class);
+            assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NON_EXISTED);
+        }
+    }
+
+    private UUID insertTestMember(String email) {
         UUID testMetaDataId = UUID.randomUUID();
         String query = "insert into member (id, email, last_gacha_timestamp, remain_ticket) values (?, ?, ?, ?)";
-        jdbcTemplate.update(query, testMetaDataId, "test@email.com", 0, 0);
+        jdbcTemplate.update(query, testMetaDataId, email, 0, 0);
 
         return testMetaDataId;
     }

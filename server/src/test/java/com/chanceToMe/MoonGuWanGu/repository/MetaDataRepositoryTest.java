@@ -20,6 +20,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
@@ -62,22 +63,76 @@ class MetaDataRepositoryTest {
         @Test
         @DisplayName("MetaData 생성")
         void ideal() {
-            MetaData metaData = MetaData.builder().id(UUID.randomUUID()).imageUrl("test_image_url")
-                                        .category("test_category").count(0).grade(0).build();
+            String testImageUrl = "test";
+            int testCount = 123;
+            int testGrade = 123;
+            int testWeight = 123;
+            String testCategory = "test";
+
+            MetaData metaData = new MetaData(UUID.randomUUID(), testImageUrl, testCount, testGrade,
+                testWeight, false, testCategory);
 
             MetaData result = metaDataRepository.insert(metaData);
 
             assertThat(result.getId()).isEqualTo(metaData.getId());
-            assertThat(result.getImageUrl()).isEqualTo(metaData.getImageUrl());
-            assertThat(result.getCategory()).isEqualTo(metaData.getCategory());
-            assertThat(result.getCount()).isEqualTo(0);
-            assertThat(result.getGrade()).isEqualTo(0);
+            assertThat(result.getImageUrl()).isEqualTo(testImageUrl);
+            assertThat(result.getCount()).isEqualTo(testCount);
+            assertThat(result.getGrade()).isEqualTo(testGrade);
+            assertThat(result.getWeight()).isEqualTo(testWeight);
+            assertThat(result.getCategory()).isEqualTo(testCategory);
+        }
+
+        @Test
+        @DisplayName("imageUrl 중복 시 DuplicateKeyException 발생")
+        void duplicatedImageUrl() {
+            String testImageUrl = "test";
+            int testCount = 123;
+            int testGrade = 123;
+            int testWeight = 123;
+            String testCategory = "test";
+            MetaData metaData = new MetaData(UUID.randomUUID(), testImageUrl, testCount, testGrade,
+                testWeight, false, testCategory);
+
+            insertTestMetaData(testImageUrl, testCount, testGrade, testWeight, false, testCategory);
+
+            assertThatThrownBy(() -> metaDataRepository.insert(metaData)).isInstanceOf(
+                DuplicateKeyException.class);
         }
     }
 
     @Nested
     @DisplayName("findById")
     class FindByIdTest {
+
+        UUID testMetaDataId;
+
+        @BeforeEach
+        void beforeEach() {
+            testMetaDataId = insertTestMetaData();
+        }
+
+        @Test
+        @DisplayName("id로 MetaData 조회")
+        void ideal() {
+            MetaData result = metaDataRepository.findById(testMetaDataId);
+
+            assertThat(result.getId()).isEqualTo(testMetaDataId);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 경우 EmptyResultDataAccessException 예외 발생")
+        void nonExisted() {
+            EmptyResultDataAccessException exception = catchThrowableOfType(
+                () -> metaDataRepository.findById(nonExistedUUID),
+                EmptyResultDataAccessException.class);
+
+            assertThat(exception).isInstanceOf(EmptyResultDataAccessException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("findByIdWithLock")
+    class FindByIdWithLockTest {
 
         UUID testMetaDataId;
 
@@ -113,9 +168,9 @@ class MetaDataRepositoryTest {
 
         @BeforeEach
         void beforeEach() {
-            insertTestMetaData("image_url1", 0, 0, testCategory);
-            insertTestMetaData("image_url2", 0, 0, testCategory);
-            insertTestMetaData("image_url3", 0, 0, testCategory);
+            insertTestMetaData("image_url1", 0, 0, 0, false, testCategory);
+            insertTestMetaData("image_url2", 0, 0, 0, false, testCategory);
+            insertTestMetaData("image_url3", 0, 0, 0, false, testCategory);
         }
 
         @Test
@@ -124,6 +179,28 @@ class MetaDataRepositoryTest {
             List<MetaData> result = metaDataRepository.findByCategory(testCategory);
 
             assertThat(result.size()).isEqualTo(3);
+        }
+    }
+
+    @Nested
+    @DisplayName("findByCategory")
+    class FindActiveTest {
+
+        String testCategory = "category";
+
+        @BeforeEach
+        void beforeEach() {
+            insertTestMetaData("image_url1", 0, 0, 0, false, testCategory);
+            insertTestMetaData("image_url2", 0, 0, 0, false, testCategory);
+            insertTestMetaData("image_url3", 0, 0, 0, true, testCategory);
+        }
+
+        @Test
+        @DisplayName("active값이 true인 MetaData 조회")
+        void ideal() {
+            List<MetaData> result = metaDataRepository.findActive();
+
+            assertThat(result.size()).isEqualTo(1);
         }
     }
 
@@ -199,16 +276,18 @@ class MetaDataRepositoryTest {
 
     private UUID insertTestMetaData() {
         UUID testMetaDataId = UUID.randomUUID();
-        String query = "insert into metadata (id, image_url, count, grade, category) values (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(query, testMetaDataId, "test_image_url", 0, 0, "test_category");
+        String query = "insert into metadata (id, image_url, count, grade, weight, active, category) values (?, ?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, testMetaDataId, "test", 0, 0, 0, false, "test");
 
         return testMetaDataId;
     }
 
-    private UUID insertTestMetaData(String imageUrl, int count, int grade, String category) {
+    private UUID insertTestMetaData(String imageUrl, Integer count, Integer grade, Integer weight,
+        Boolean active, String category) {
         UUID testMetaDataId = UUID.randomUUID();
-        String query = "insert into metadata (id, image_url, count, grade, category) values (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(query, testMetaDataId, imageUrl, count, grade, category);
+        String query = "insert into metadata (id, image_url, count, grade, weight, active, category) values (?, ?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(query, testMetaDataId, imageUrl, count, grade, weight, active,
+            category);
 
         return testMetaDataId;
     }

@@ -3,12 +3,16 @@ package com.chanceToMe.MoonGuWanGu.repository;
 import com.chanceToMe.MoonGuWanGu.common.enums.ErrorCode;
 import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.MetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
 
 @Repository
 @Transactional
@@ -18,10 +22,11 @@ public class MetaDataRepository {
     private JdbcTemplate jdbcTemplate;
 
     public MetaData insert(MetaData metaData) {
-        String query = "insert into metadata (id, image_url, count, grade, category) values (?, ?, ?, ?, ?)";
+        String query = "insert into metadata (id, image_url, count, grade, weight, active, category) values (?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(query, metaData.getId(), metaData.getImageUrl(), metaData.getCount(),
-            metaData.getGrade(), metaData.getCategory());
+            metaData.getGrade(), metaData.getWeight(), metaData.getActive(),
+            metaData.getCategory());
 
         return metaData;
     }
@@ -29,23 +34,25 @@ public class MetaDataRepository {
     public MetaData findById(UUID id) {
         String query = "select * from metadata where id = ?";
 
-        return jdbcTemplate.queryForObject(query,
-            (rs, rowNum) -> new MetaData(UUID.fromString(rs.getString("id")),
-                rs.getString("image_url"), rs.getInt("count"), rs.getInt("grade"),
-                rs.getInt("weight"), rs.getBoolean("active"), rs.getString("category")) {
+        return jdbcTemplate.queryForObject(query, rowMapper, id);
+    }
 
-            }, id);
+    public MetaData findByIdWithLock(UUID id) {
+        String query = "select * from metadata where id = ? for update";
+
+        return jdbcTemplate.queryForObject(query, rowMapper, id);
     }
 
     public List<MetaData> findByCategory(String category) {
         String query = "select * from metadata where category = ?";
 
-        return jdbcTemplate.query(query, (rs, rowNum) -> {
-            return MetaData.builder().id(UUID.fromString(rs.getString("id")))
-                           .imageUrl(rs.getString("image_url")).category(rs.getString("category"))
-                           .count(rs.getInt("count")).grade(rs.getInt("grade")).build();
+        return jdbcTemplate.query(query, rowMapper, category);
+    }
 
-        }, category);
+    public List<MetaData> findActive() {
+        String query = "select * from metadata where active = true order by weight desc";
+
+        return jdbcTemplate.query(query, rowMapper);
     }
 
     public MetaData update(MetaData metaData) {
@@ -72,4 +79,13 @@ public class MetaDataRepository {
             throw new CustomException(ErrorCode.NON_EXISTED, null);
         }
     }
+
+    private RowMapper<MetaData> rowMapper = new RowMapper<MetaData>() {
+        @Override
+        public MetaData mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new MetaData(UUID.fromString(rs.getString("id")), rs.getString("image_url"),
+                rs.getInt("count"), rs.getInt("grade"), rs.getInt("weight"),
+                rs.getBoolean("active"), rs.getString("category"));
+        }
+    };
 }

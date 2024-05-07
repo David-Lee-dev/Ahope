@@ -44,7 +44,6 @@ public class CardRepository {
     private RowMapper<Card> rowMapper = new RowMapper<Card>() {
         @Override
         public Card mapRow(ResultSet rs, int rowNum) throws SQLException {
-            System.out.println(rs);
             UUID memberId = UUID.fromString(rs.getString("member"));
             Member member = Member.builder().id(memberId).build();
 
@@ -56,7 +55,7 @@ public class CardRepository {
                                         .category(category).build();
 
             UUID cardId = UUID.fromString(rs.getString("id"));
-            Long seq = rs.getLong("seq");
+            Integer seq = rs.getInt("seq");
 
             return new Card(cardId, member, metaData, seq);
         }

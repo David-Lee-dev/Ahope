@@ -1,11 +1,11 @@
 package com.chanceToMe.MoonGuWanGu.model;
 
+import java.time.Instant;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.lang.Nullable;
-
-import java.util.UUID;
 
 @Getter
 public class Member {
@@ -27,5 +27,13 @@ public class Member {
         this.email = email;
         this.lastGachaTimestamp = lastGachaTimestamp;
         this.remainTicket = remainTicket;
+    }
+
+    public void updateLastGachaTimestamp() {
+        this.lastGachaTimestamp = Instant.now().toEpochMilli();
+    }
+
+    public void decreaseRemainTicket() {
+        this.remainTicket = Math.max(this.remainTicket - 1, 0);
     }
 }

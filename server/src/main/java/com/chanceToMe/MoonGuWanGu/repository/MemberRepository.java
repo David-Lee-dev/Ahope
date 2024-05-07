@@ -1,5 +1,7 @@
 package com.chanceToMe.MoonGuWanGu.repository;
 
+import com.chanceToMe.MoonGuWanGu.common.enums.ErrorCode;
+import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.Member;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,5 +32,18 @@ public class MemberRepository {
             return new Member(UUID.fromString(rs.getString("id")), rs.getString("email"),
                 rs.getLong("last_gacha_timestamp"), rs.getInt("remain_ticket"));
         }, id);
+    }
+
+    public Member update(Member member) {
+        String query = "update member set last_gacha_timestamp = ?, remain_ticket = ? where id = ?";
+
+        int affectedNum = jdbcTemplate.update(query, member.getLastGachaTimestamp(),
+            member.getRemainTicket(), member.getId());
+
+        if (affectedNum == 1) {
+            return member;
+        } else {
+            throw new CustomException(ErrorCode.NON_EXISTED, null);
+        }
     }
 }
