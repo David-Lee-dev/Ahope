@@ -7,6 +7,7 @@ import com.chanceToMe.MoonGuWanGu.repository.MemberRepository;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,6 +30,18 @@ public class MemberService {
     } catch (Exception e) {
       if (e instanceof DuplicateKeyException) {
         throw new CustomException(ErrorCode.DUPLICATED_KEY, e.getStackTrace());
+      } else {
+        throw new CustomException(ErrorCode.UNKNOWN, e.getStackTrace());
+      }
+    }
+  }
+
+  public Member findMember(UUID memberId) {
+    try {
+      return memberRepository.findById(memberId);
+    } catch (Exception e) {
+      if (e instanceof EmptyResultDataAccessException) {
+        throw new CustomException(ErrorCode.NON_EXISTED, e.getStackTrace());
       } else {
         throw new CustomException(ErrorCode.UNKNOWN, e.getStackTrace());
       }

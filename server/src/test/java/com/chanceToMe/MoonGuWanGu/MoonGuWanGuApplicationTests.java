@@ -32,195 +32,219 @@ import org.springframework.transaction.annotation.Transactional;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MoonGuWanGuApplicationTests {
 
-  @Autowired
-  private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-  @Autowired
-  MemberController memberController;
+    @Autowired
+    MemberController memberController;
 
-  @Autowired
-  DataSource dataSource;
+    @Autowired
+    DataSource dataSource;
 
-  @BeforeAll
-  public void beforeAll() throws Exception {
-    try (Connection conn = dataSource.getConnection()) {
-      ScriptUtils.executeSqlScript(conn, new ClassPathResource("/integration.test.ddl.sql"));
-    }
-  }
-
-  @AfterAll
-  public void afterAll() throws Exception {
-    try (Connection conn = dataSource.getConnection()) {
-      ScriptUtils.executeSqlScript(conn, new ClassPathResource("/cleandb.test.ddl.sql"));
-    }
-  }
-
-  @Nested
-  @DisplayName("POST /api/join")
-  class signup {
-
-    @Test
-    @DisplayName("정상 요청에 대해 201 응답")
-    void idealRequest() throws Exception {
-      Map<String, String> requestBody = new HashMap<>();
-      requestBody.put("email", "test@gmail.com");
-
-      mockMvc.perform(
-                 MockMvcRequestBuilders.post("/api/member").contentType(MediaType.APPLICATION_JSON)
-                                       .content(String.valueOf(new JSONObject(requestBody))))
-             .andExpect(status().isCreated());
+    @BeforeAll
+    public void beforeAll() throws Exception {
+        try (Connection conn = dataSource.getConnection()) {
+            ScriptUtils.executeSqlScript(conn, new ClassPathResource("/integration.test.ddl.sql"));
+        }
     }
 
-    @Test
-    @DisplayName("중복 Email에 대해 400 응답")
-    void invalidEamil() throws Exception {
-      Map<String, String> requestBody = new HashMap<>();
-      requestBody.put("email", "invalid email");
-
-      mockMvc.perform(
-                 MockMvcRequestBuilders.post("/api/member").contentType(MediaType.APPLICATION_JSON)
-                                       .content(String.valueOf(new JSONObject(requestBody))))
-             .andExpect(status().isBadRequest());
+    @AfterAll
+    public void afterAll() throws Exception {
+        try (Connection conn = dataSource.getConnection()) {
+            ScriptUtils.executeSqlScript(conn, new ClassPathResource("/cleandb.test.ddl.sql"));
+        }
     }
 
-    @Test
-    @DisplayName("중복 Email에 대해 400 응답")
-    void duplicatedEmail() throws Exception {
-      Map<String, String> requestBody = new HashMap<>();
-      requestBody.put("email", "duplicated@test.com");
+    @Nested
+    @DisplayName("POST /api/member")
+    class signup {
 
-      mockMvc.perform(
-                 MockMvcRequestBuilders.post("/api/member").contentType(MediaType.APPLICATION_JSON)
-                                       .content(String.valueOf(new JSONObject(requestBody))))
-             .andExpect(status().isBadRequest());
-    }
-  }
+        @Test
+        @DisplayName("정상 요청에 대해 201 응답")
+        void idealRequest() throws Exception {
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("email", "test@gmail.com");
 
-  @Nested
-  @DisplayName("POST /api/metadata")
-  class AddMetaDataTest {
+            mockMvc.perform(
+                       MockMvcRequestBuilders.post("/api/member").contentType(MediaType.APPLICATION_JSON)
+                                             .content(String.valueOf(new JSONObject(requestBody))))
+                   .andExpect(status().isCreated());
+        }
 
-    @Test
-    @DisplayName("정상 요청에 대해 201 응답")
-    void idealRequest() throws Exception {
-      Map<String, Object> requestBody = new HashMap<>();
-      requestBody.put("imageUrl", "test_image_url");
-      requestBody.put("grade", 0);
-      requestBody.put("category", "test_category");
+        @Test
+        @DisplayName("유효하지 않은 형식의 Email에 대해 400 응답")
+        void invalidEamil() throws Exception {
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("email", "invalid email");
 
-      mockMvc.perform(
-                 MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
-                                       .content(String.valueOf(new JSONObject(requestBody))))
-             .andExpect(status().isCreated());
-    }
+            mockMvc.perform(
+                       MockMvcRequestBuilders.post("/api/member").contentType(MediaType.APPLICATION_JSON)
+                                             .content(String.valueOf(new JSONObject(requestBody))))
+                   .andExpect(status().isBadRequest());
+        }
 
-    @Test
-    @DisplayName("imageUrl 누락에 대해 400 응답")
-    void missingImageUrl() throws Exception {
-      Map<String, Object> requestBody = new HashMap<>();
-      requestBody.put("grade", 0);
-      requestBody.put("category", "test_category");
+        @Test
+        @DisplayName("중복 Email에 대해 400 응답")
+        void duplicatedEmail() throws Exception {
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("email", "duplicated@test.com");
 
-      mockMvc.perform(
-                 MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
-                                       .content(String.valueOf(new JSONObject(requestBody))))
-             .andExpect(status().isBadRequest());
+            mockMvc.perform(
+                       MockMvcRequestBuilders.post("/api/member").contentType(MediaType.APPLICATION_JSON)
+                                             .content(String.valueOf(new JSONObject(requestBody))))
+                   .andExpect(status().isBadRequest());
+        }
     }
 
-    @Test
-    @DisplayName("grade 누락에 대해 400 응답")
-    void missingGrade() throws Exception {
-      Map<String, Object> requestBody = new HashMap<>();
-      requestBody.put("imageUrl", "test_image_url");
-      requestBody.put("category", "test_category");
+    @Nested
+    @DisplayName("GET /api/member/{memberId}")
+    class getMemberDataTest {
 
-      mockMvc.perform(
-                 MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
-                                       .content(String.valueOf(new JSONObject(requestBody))))
-             .andExpect(status().isBadRequest());
-    }
+        String testMemberId = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
 
-    @Test
-    @DisplayName("category 누락에 대해 400 응답")
-    void missingCategory() throws Exception {
-      Map<String, Object> requestBody = new HashMap<>();
-      requestBody.put("imageUrl", "test_image_url");
-      requestBody.put("grade", 0);
+        @Test
+        @DisplayName("Member가 있을 경우 member 데이터와 200 응답")
+        void idealRequest() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get("/api/member/" + testMemberId)
+                                                  .contentType(MediaType.APPLICATION_JSON))
+                   .andExpect(status().isOk());
+        }
 
-      mockMvc.perform(
-                 MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
-                                       .content(String.valueOf(new JSONObject(requestBody))))
-             .andExpect(status().isBadRequest());
-    }
+        @Test
+        @DisplayName("존재하지 않는 Member에 대해 404 응답")
+        void nonExistedMember() throws Exception {
+            mockMvc.perform(
+                       MockMvcRequestBuilders.get("/api/member/" + UUID.randomUUID().toString())
+                                             .contentType(MediaType.APPLICATION_JSON))
+                   .andExpect(status().isNotFound());
+        }
 
-    @Test
-    @DisplayName("5를 초과하는 grade에 대해 400 응답")
-    void gradeOverFive() throws Exception {
-      Map<String, Object> requestBody = new HashMap<>();
-      requestBody.put("imageUrl", "test_image_url");
-      requestBody.put("grade", 100);
-      requestBody.put("category", "test_category");
-
-      mockMvc.perform(
-                 MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
-                                       .content(String.valueOf(new JSONObject(requestBody))))
-             .andExpect(status().isBadRequest());
-    }
-  }
-
-  @Nested
-  @DisplayName("GET /api/metadata")
-  class FindMetaDataTest {
-
-    @Test
-    @DisplayName("정상 요청에 대해 MetaData 리스트와 200 응답")
-    void idealRequest() throws Exception {
-      mockMvc.perform(
-                 MockMvcRequestBuilders.get("/api/metadata?category=category")
-                                       .contentType(MediaType.APPLICATION_JSON))
-             .andExpect(jsonPath(".list").isArray())
-             .andExpect(status().isOk());
     }
 
 
-    @Test
-    @DisplayName("항목이 하나도 존재하지 않으면 404 응답")
-    void nonExistedCategory() throws Exception {
-      mockMvc.perform(
-                 MockMvcRequestBuilders.get("/api/metadata?category=non_existed_category")
-                                       .contentType(MediaType.APPLICATION_JSON))
-             .andExpect(status().isNotFound());
+    @Nested
+    @DisplayName("POST /api/metadata")
+    class AddMetaDataTest {
+
+        @Test
+        @DisplayName("정상 요청에 대해 201 응답")
+        void idealRequest() throws Exception {
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("imageUrl", "test_image_url");
+            requestBody.put("grade", 0);
+            requestBody.put("category", "test_category");
+
+            mockMvc.perform(
+                       MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
+                                             .content(String.valueOf(new JSONObject(requestBody))))
+                   .andExpect(status().isCreated());
+        }
+
+        @Test
+        @DisplayName("imageUrl 누락에 대해 400 응답")
+        void missingImageUrl() throws Exception {
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("grade", 0);
+            requestBody.put("category", "test_category");
+
+            mockMvc.perform(
+                       MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
+                                             .content(String.valueOf(new JSONObject(requestBody))))
+                   .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("grade 누락에 대해 400 응답")
+        void missingGrade() throws Exception {
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("imageUrl", "test_image_url");
+            requestBody.put("category", "test_category");
+
+            mockMvc.perform(
+                       MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
+                                             .content(String.valueOf(new JSONObject(requestBody))))
+                   .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("category 누락에 대해 400 응답")
+        void missingCategory() throws Exception {
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("imageUrl", "test_image_url");
+            requestBody.put("grade", 0);
+
+            mockMvc.perform(
+                       MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
+                                             .content(String.valueOf(new JSONObject(requestBody))))
+                   .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("5를 초과하는 grade에 대해 400 응답")
+        void gradeOverFive() throws Exception {
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("imageUrl", "test_image_url");
+            requestBody.put("grade", 100);
+            requestBody.put("category", "test_category");
+
+            mockMvc.perform(
+                       MockMvcRequestBuilders.post("/api/metadata").contentType(MediaType.APPLICATION_JSON)
+                                             .content(String.valueOf(new JSONObject(requestBody))))
+                   .andExpect(status().isBadRequest());
+        }
     }
-  }
 
-  @Nested
-  @DisplayName("POST /api/card")
-  class DrawCardTest {
+    @Nested
+    @DisplayName("GET /api/metadata")
+    class FindMetaDataTest {
 
-    String testUserId = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+        @Test
+        @DisplayName("정상 요청에 대해 MetaData 리스트와 200 응답")
+        void idealRequest() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get("/api/metadata?category=category")
+                                                  .contentType(MediaType.APPLICATION_JSON))
+                   .andExpect(jsonPath(".list").isArray()).andExpect(status().isOk());
+        }
 
-    @Test
-    @DisplayName("정상 요청에 대해 201 응답")
-    void idealRequest() throws Exception {
-      Map<String, String> requestBody = new HashMap<>();
-      requestBody.put("memberId", testUserId);
 
-      mockMvc.perform(
-                 MockMvcRequestBuilders.post("/api/card").contentType(MediaType.APPLICATION_JSON)
-                                       .content(String.valueOf(new JSONObject(requestBody))))
-             .andExpect(status().isCreated());
+        @Test
+        @DisplayName("항목이 하나도 존재하지 않으면 404 응답")
+        void nonExistedCategory() throws Exception {
+            mockMvc.perform(
+                       MockMvcRequestBuilders.get("/api/metadata?category=non_existed_category")
+                                             .contentType(MediaType.APPLICATION_JSON))
+                   .andExpect(status().isNotFound());
+        }
     }
 
-    @Test
-    @DisplayName("존재하지 않는 Member일 경우 404 응답")
-    void nonExistedMember() throws Exception {
-      Map<String, String> requestBody = new HashMap<>();
-      requestBody.put("memberId", UUID.randomUUID().toString());
+    @Nested
+    @DisplayName("POST /api/card")
+    class DrawCardTest {
 
-      mockMvc.perform(
-                 MockMvcRequestBuilders.post("/api/card").contentType(MediaType.APPLICATION_JSON)
-                                       .content(String.valueOf(new JSONObject(requestBody))))
-             .andExpect(status().isNotFound());
+        String testUserId = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+
+        @Test
+        @DisplayName("정상 요청에 대해 201 응답")
+        void idealRequest() throws Exception {
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("memberId", testUserId);
+
+            mockMvc.perform(
+                       MockMvcRequestBuilders.post("/api/card").contentType(MediaType.APPLICATION_JSON)
+                                             .content(String.valueOf(new JSONObject(requestBody))))
+                   .andExpect(status().isCreated());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 Member일 경우 404 응답")
+        void nonExistedMember() throws Exception {
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("memberId", UUID.randomUUID().toString());
+
+            mockMvc.perform(
+                       MockMvcRequestBuilders.post("/api/card").contentType(MediaType.APPLICATION_JSON)
+                                             .content(String.valueOf(new JSONObject(requestBody))))
+                   .andExpect(status().isNotFound());
+        }
     }
-  }
 }

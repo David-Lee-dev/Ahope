@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
@@ -57,7 +58,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("처리하지 않은 예외가 발생한 경우 UNKWON 예 발생")
+    @DisplayName("처리하지 않은 예외가 발생한 경우 UNKNOWN 예 발생")
     void unknown() {
       when(memberRepository.insert(any(Member.class))).thenThrow(RuntimeException.class);
 
@@ -65,6 +66,36 @@ class MemberServiceTest {
           () -> memberService.createMember(anyString()), CustomException.class);
       assertThat(exception).isInstanceOf(CustomException.class);
       assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN);
+    }
+  }
+
+  @Nested
+  @DisplayName("findMember")
+  class FindMemberTest {
+
+    @Test
+    @DisplayName("Member 반환")
+    void ideal() {
+      Member member = Member.builder().id(UUID.randomUUID()).email("test").build();
+
+      when(memberRepository.findById(any(UUID.class))).thenReturn(member);
+
+      Member result = memberService.findMember(member.getId());
+
+      assertThat(result.getId()).isEqualTo(member.getId());
+      assertThat(result.getEmail()).isEqualTo(member.getEmail());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 Member일 경우 NON_EXISTED 예외 발생")
+    void nonExistedMember() {
+      when(memberRepository.findById(any(UUID.class))).thenThrow(EmptyResultDataAccessException.class);
+
+      CustomException exception = catchThrowableOfType(
+          () -> memberService.findMember(UUID.randomUUID()), CustomException.class);
+
+      assertThat(exception).isInstanceOf(CustomException.class);
+      assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NON_EXISTED);
     }
   }
 }
