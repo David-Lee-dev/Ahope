@@ -7,6 +7,7 @@ import com.chanceToMe.MoonGuWanGu.controller.MemberController;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import javax.sql.DataSource;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
@@ -188,6 +189,37 @@ class MoonGuWanGuApplicationTests {
       mockMvc.perform(
                  MockMvcRequestBuilders.get("/api/metadata?category=non_existed_category")
                                        .contentType(MediaType.APPLICATION_JSON))
+             .andExpect(status().isNotFound());
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /api/card")
+  class DrawCardTest {
+
+    String testUserId = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+
+    @Test
+    @DisplayName("정상 요청에 대해 201 응답")
+    void idealRequest() throws Exception {
+      Map<String, String> requestBody = new HashMap<>();
+      requestBody.put("memberId", testUserId);
+
+      mockMvc.perform(
+                 MockMvcRequestBuilders.post("/api/card").contentType(MediaType.APPLICATION_JSON)
+                                       .content(String.valueOf(new JSONObject(requestBody))))
+             .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 Member일 경우 404 응답")
+    void nonExistedMember() throws Exception {
+      Map<String, String> requestBody = new HashMap<>();
+      requestBody.put("memberId", UUID.randomUUID().toString());
+
+      mockMvc.perform(
+                 MockMvcRequestBuilders.post("/api/card").contentType(MediaType.APPLICATION_JSON)
+                                       .content(String.valueOf(new JSONObject(requestBody))))
              .andExpect(status().isNotFound());
     }
   }

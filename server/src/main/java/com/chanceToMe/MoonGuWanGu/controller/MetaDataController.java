@@ -24,30 +24,31 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/metadata")
 public class MetaDataController {
 
-  @Autowired
-  MetaDataService metaDataService;
+    @Autowired
+    MetaDataService metaDataService;
 
-  @PostMapping
-  public ResponseEntity add(@RequestBody @Valid CreateMetaDataDto dto) {
-    metaDataService.addMetaData(dto.getImageUrl(), dto.getGrade(), dto.getCategory());
+    @PostMapping
+    public ResponseEntity add(@RequestBody @Valid CreateMetaDataDto dto) {
+        metaDataService.addMetaData(dto.getImageUrl(), dto.getGrade(), dto.getWeight(),
+            dto.getCategory());
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(null);
-  }
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+    }
 
-  @GetMapping
-  public ResponseEntity find(@RequestParam(value = "category") String category) {
-    List<MetaData> metaDataList = metaDataService.retrieveMetaDataByCategory(category);
+    @GetMapping
+    public ResponseEntity find(@RequestParam(value = "category") String category) {
+        List<MetaData> metaDataList = metaDataService.retrieveMetaDataByCategory(category);
 
-    Map<String, Object> responseBody = new HashMap<>();
-    responseBody.put("list", metaDataList);
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("list", metaDataList);
 
-    return ResponseEntity.status(HttpStatus.OK).body(responseBody);
-  }
+        return ResponseEntity.status(HttpStatus.OK).body(responseBody);
+    }
 
-  @DeleteMapping
-  public ResponseEntity delete(@RequestBody @Valid DeleteMetaDataDto dto) {
-    UUID deletedId = metaDataService.deleteMetaData(dto.getId());
+    @DeleteMapping
+    public ResponseEntity delete(@RequestBody @Valid DeleteMetaDataDto dto) {
+        UUID deletedId = metaDataService.deleteMetaData(dto.getId());
 
-    return ResponseEntity.status(HttpStatus.OK).body(deletedId);
-  }
+        return ResponseEntity.status(HttpStatus.OK).body(deletedId);
+    }
 }

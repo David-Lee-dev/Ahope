@@ -17,18 +17,17 @@ public class MetaDataService {
   @Autowired
   MetaDataRepository metaDataRepository;
 
-  public MetaData addMetaData(String imageUrl, int grade, String category) {
+  public MetaData addMetaData(String imageUrl, int grade, int weight, String category) {
     try {
-      MetaData metaData = MetaData.builder().id(UUID.randomUUID()).imageUrl(imageUrl).count(0)
-                                  .grade(Math.max(grade, 0)).category(category).build();
+      MetaData metaData = new MetaData(UUID.randomUUID(), imageUrl, 0, grade, weight, false,
+          category);
 
       return metaDataRepository.insert(metaData);
     } catch (Exception e) {
       if (e instanceof DuplicateKeyException) {
         throw new CustomException(ErrorCode.DUPLICATED_KEY, e.getStackTrace());
       } else {
-        throw e;
-//        throw new CustomException(ErrorCode.UNKNOWN, e.getStackTrace());
+        throw new CustomException(ErrorCode.UNKNOWN, e.getStackTrace());
       }
     }
   }

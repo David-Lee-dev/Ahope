@@ -26,7 +26,7 @@ CREATE TABLE metadata (
 
 INSERT INTO metadata (id, image_url, count, grade, category, weight, active)
 VALUES
-    ('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'image_url1', '0', '1', 'category', '10', 'false'),
+    ('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'image_url1', '0', '1', 'category', '10', 'true'),
     ('c1e03367-6c1b-4a82-b916-0b8a2d15c1a5', 'image_url2', '0', '2', 'category', '10', 'false'),
     ('d45b4219-f4c4-4b2b-bc5a-876ea85bd32e', 'image_url3', '0', '3', 'category', '10', 'false'),
     ('a3e3d052-1c9d-40c4-83e7-936127cfbe15', 'image_url4', '0', '0', 'category', '10', 'false'),

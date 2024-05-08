@@ -30,10 +30,10 @@ public class CardService {
     MemberRepository memberRepository;
 
     @Transactional
-    public Card draw(UUID memberId) {
+    public Card drawCard(UUID memberId) {
         try {
             Member member = memberRepository.findById(memberId);
-            MetaData metaData = metaDataRepository.findByIdWithLock(drawCard());
+            MetaData metaData = metaDataRepository.findByIdWithLock(getTargetMetaDataId());
 
             metaData.increaseCount();
             metaDataRepository.update(metaData);
@@ -60,7 +60,11 @@ public class CardService {
         }
     }
 
-    private UUID drawCard() {
+    public List<Card> retrieveCardsByMember(UUID memberId) {
+        return cardRepository.findByMember(memberId);
+    }
+
+    private UUID getTargetMetaDataId() {
         try {
             List<MetaData> metaDataList = metaDataRepository.findActive();
             int randomNumber = new Random().nextInt(100000) + 1;
@@ -78,6 +82,7 @@ public class CardService {
             if (e instanceof IndexOutOfBoundsException) {
                 throw new CustomException(ErrorCode.NON_EXISTED, e.getStackTrace());
             } else {
+                System.out.println(e);
                 throw new CustomException(ErrorCode.UNKNOWN, e.getStackTrace());
             }
         }

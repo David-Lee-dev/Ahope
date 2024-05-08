@@ -40,10 +40,10 @@ class MetaDataControllerTest {
     @Test
     @DisplayName("MetaData 생성 성공 시 201 응답")
     void ideal() {
-      when(metaDataService.addMetaData(anyString(), anyInt(), anyString())).thenReturn(
+      when(metaDataService.addMetaData(anyString(), anyInt(), anyInt(),anyString())).thenReturn(
           MetaData.builder().build());
 
-      ResponseEntity result = metaDataController.add(new CreateMetaDataDto("test", 0, "test"));
+      ResponseEntity result = metaDataController.add(new CreateMetaDataDto("test", 0, 0, "test"));
       assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     }
   }

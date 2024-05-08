@@ -58,7 +58,7 @@ class CardServiceTest {
             when(memberRepository.findById(any(UUID.class))).thenReturn(member);
             when(memberRepository.update(any(Member.class))).thenReturn(member);
 
-            Card result = cardService.draw(member.getId());
+            Card result = cardService.drawCard(member.getId());
 
             assertThat(result.getMember().getId()).isEqualTo(card.getMember().getId());
             assertThat(result.getMetaData().getId()).isEqualTo(card.getMetaData().getId());
@@ -70,7 +70,7 @@ class CardServiceTest {
             when(memberRepository.findById(any(UUID.class))).thenThrow(
                 EmptyResultDataAccessException.class);
 
-            CustomException exception = catchThrowableOfType(() -> cardService.draw(member.getId()),
+            CustomException exception = catchThrowableOfType(() -> cardService.drawCard(member.getId()),
                 CustomException.class);
 
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NON_EXISTED);
@@ -84,7 +84,7 @@ class CardServiceTest {
             when(metaDataRepository.findByIdWithLock(any(UUID.class))).thenThrow(
                 EmptyResultDataAccessException.class);
 
-            CustomException exception = catchThrowableOfType(() -> cardService.draw(member.getId()),
+            CustomException exception = catchThrowableOfType(() -> cardService.drawCard(member.getId()),
                 CustomException.class);
 
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NON_EXISTED);
@@ -96,7 +96,7 @@ class CardServiceTest {
             when(metaDataRepository.findActive()).thenReturn(new ArrayList<>());
             when(memberRepository.findById(any(UUID.class))).thenReturn(member);
 
-            CustomException exception = catchThrowableOfType(() -> cardService.draw(member.getId()),
+            CustomException exception = catchThrowableOfType(() -> cardService.drawCard(member.getId()),
                 CustomException.class);
 
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NON_EXISTED);

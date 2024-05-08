@@ -20,6 +20,10 @@ public class CreateMetaDataDto {
   @NotNull
   private Integer grade;
 
+  @Max(value = 100000)
+  @NotNull
+  private Integer weight;
+
   @NotBlank
   @NotNull
   private String category;

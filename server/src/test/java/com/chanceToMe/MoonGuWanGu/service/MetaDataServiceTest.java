@@ -47,7 +47,7 @@ class MetaDataServiceTest {
 
       when(metaDataRepository.insert(any(MetaData.class))).thenReturn(metaData);
 
-      MetaData result = metaDataService.addMetaData(testImageUrl, 0, testCategory);
+      MetaData result = metaDataService.addMetaData(testImageUrl, 0, 0, testCategory);
 
       assertThat(result.getImageUrl()).isEqualTo(testImageUrl);
       assertThat(result.getCount()).isEqualTo(0);
@@ -64,7 +64,7 @@ class MetaDataServiceTest {
 
       when(metaDataRepository.insert(any(MetaData.class))).thenReturn(metaData);
 
-      MetaData result = metaDataService.addMetaData(testImageUrl, -2, testCategory);
+      MetaData result = metaDataService.addMetaData(testImageUrl, -2, 0, testCategory);
 
       assertThat(result.getImageUrl()).isEqualTo(testImageUrl);
       assertThat(result.getCount()).isEqualTo(0);
@@ -78,7 +78,7 @@ class MetaDataServiceTest {
       when(metaDataRepository.insert(any(MetaData.class))).thenThrow(DuplicateKeyException.class);
 
       CustomException exception = catchThrowableOfType(
-          () -> metaDataService.addMetaData(testImageUrl, 0, testCategory), CustomException.class);
+          () -> metaDataService.addMetaData(testImageUrl, 0, 0, testCategory), CustomException.class);
 
       assertThat(exception).isInstanceOf(CustomException.class);
       assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.DUPLICATED_KEY);
