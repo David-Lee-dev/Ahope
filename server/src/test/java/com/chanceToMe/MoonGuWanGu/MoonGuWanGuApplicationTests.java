@@ -118,9 +118,7 @@ class MoonGuWanGuApplicationTests {
                                              .contentType(MediaType.APPLICATION_JSON))
                    .andExpect(status().isNotFound());
         }
-
     }
-
 
     @Nested
     @DisplayName("POST /api/metadata")
@@ -132,6 +130,7 @@ class MoonGuWanGuApplicationTests {
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("imageUrl", "test_image_url");
             requestBody.put("grade", 0);
+            requestBody.put("weight", 0);
             requestBody.put("category", "test_category");
 
             mockMvc.perform(
