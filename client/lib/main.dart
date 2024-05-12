@@ -23,15 +23,6 @@ class _AppState extends State<App> {
     super.dispose();
   }
 
-  static final List<Widget> _pageTitles = <Widget>[
-    const Text('Gacha',
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
-    const Text('Collection',
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
-    const Text('not yet',
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
-  ];
-
   static final List<Widget> _pages = <Widget>[
     const GachaPage(lastGachaTimestampe: 1714527654000, ticketCount: 2),
     CollectionPage(),
@@ -61,10 +52,10 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        scaffoldBackgroundColor: const Color(0xff051732),
+      ),
       home: Scaffold(
-        appBar: AppBar(
-          title: _pageTitles[_selectedIndex],
-        ),
         body: PageView(
           controller: _pageController,
           onPageChanged: _onPageChanged,

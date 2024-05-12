@@ -1,3 +1,4 @@
+import 'package:client/widget/gredientButton.widget.dart';
 import 'package:flutter/material.dart';
 
 class GachaPage extends StatefulWidget {
@@ -23,12 +24,18 @@ class _GachaPageState extends State<GachaPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('시간 영역'),
-          ElevatedButton(
+          GradientButton(
+            borderRadius: BorderRadius.circular(25),
+            height: 50,
             onPressed: () {},
-            child: const Text('Gacha!!'),
+            child: const Text(
+              'Gacha',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
           ),
-          const Text('가능 횟수 1/3'),
         ],
       ),
     );
