@@ -3,7 +3,6 @@ import 'package:client/page/gacha.page.dart';
 import 'package:client/widget/bottom_nav/bottomNav.widget.dart';
 import 'package:client/widget/bottom_nav/bottomNavItem.widget.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 
 void main() {
   runApp(const App());
@@ -19,12 +18,10 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
-  Timer? _debounce;
 
   @override
   void dispose() {
     _pageController.dispose();
-    _debounce?.cancel();
     super.dispose();
   }
 
@@ -35,26 +32,22 @@ class _AppState extends State<App> {
       child: Text('Profile Page',
           style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
     ),
-    CollectionPage(),
+    const Center(
+      child: Text('Settgins Page',
+          style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
+    ),
   ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      _pageController.animateToPage(
-        index,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.ease,
-      );
+      _pageController.jumpToPage(index);
     });
   }
 
   void _onPageChanged(int index) {
-    if (_debounce?.isActive ?? false) _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 50), () {
-      setState(() {
-        _selectedIndex = index;
-      });
+    setState(() {
+      _selectedIndex = index;
     });
   }
 

@@ -1,3 +1,4 @@
+import 'package:client/widget/gachaCard.widget.dart';
 import 'package:client/widget/gredientButton.widget.dart';
 import 'package:flutter/material.dart';
 
@@ -20,24 +21,32 @@ class _GachaPageState extends State<GachaPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          GradientButton(
-            borderRadius: BorderRadius.circular(25),
-            height: 50,
-            onPressed: () {},
-            child: const Text(
-              'Gacha',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GradientButton(
+          borderRadius: BorderRadius.circular(25),
+          height: 50,
+          onPressed: () => showDialog(
+            context: context,
+            builder: (BuildContext context) => Dialog(
+              backgroundColor: Colors.transparent,
+              child: GachaCard(
+                onClose: () {
+                  Navigator.pop(context);
+                },
               ),
             ),
           ),
-        ],
-      ),
+          child: const Text(
+            'Gacha',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
