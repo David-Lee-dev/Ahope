@@ -1,6 +1,9 @@
 import 'package:client/page/collection.page.dart';
 import 'package:client/page/gacha.page.dart';
+import 'package:client/widget/bottom_nav/bottomNav.widget.dart';
+import 'package:client/widget/bottom_nav/bottomNavItem.widget.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 void main() {
   runApp(const App());
@@ -16,10 +19,12 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
+  Timer? _debounce;
 
   @override
   void dispose() {
     _pageController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -30,6 +35,7 @@ class _AppState extends State<App> {
       child: Text('Profile Page',
           style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
     ),
+    CollectionPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -44,8 +50,11 @@ class _AppState extends State<App> {
   }
 
   void _onPageChanged(int index) {
-    setState(() {
-      _selectedIndex = index;
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 50), () {
+      setState(() {
+        _selectedIndex = index;
+      });
     });
   }
 
@@ -61,24 +70,27 @@ class _AppState extends State<App> {
           onPageChanged: _onPageChanged,
           children: _pages,
         ),
-        bottomNavigationBar: BottomNavigationBar(
+        bottomNavigationBar: BottomNav(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
           items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.gamepad_rounded),
-              label: 'Gacha',
+            BottomNavItem(
+              icon: Icon(Icons.home, color: Colors.white),
+              label: "Gacha",
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Collection',
+            BottomNavItem(
+              icon: Icon(Icons.collections, color: Colors.white),
+              label: "Collections",
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'not yet',
+            BottomNavItem(
+              icon: Icon(Icons.price_change, color: Colors.white),
+              label: "Market",
+            ),
+            BottomNavItem(
+              icon: Icon(Icons.settings, color: Colors.white),
+              label: "Setting",
             ),
           ],
-          currentIndex: _selectedIndex,
-          selectedItemColor: Colors.blue,
-          onTap: _onItemTapped,
         ),
       ),
     );
