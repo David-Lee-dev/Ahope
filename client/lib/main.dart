@@ -1,7 +1,7 @@
-import 'package:client/page/collection.page.dart';
-import 'package:client/page/gacha.page.dart';
-import 'package:client/widget/bottom_nav/bottomNav.widget.dart';
-import 'package:client/widget/bottom_nav/bottomNavItem.widget.dart';
+import 'package:client/collection/page/collection.page.dart';
+import 'package:client/gacha/page/gacha.page.dart';
+import 'package:client/common/widget/bottom_nav/bottomNav.widget.dart';
+import 'package:client/common/widget/bottom_nav/bottomNavItem.widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 

@@ -1,5 +1,5 @@
-import 'package:client/widget/gachaCard.widget.dart';
-import 'package:client/widget/gredientButton.widget.dart';
+import 'package:client/gacha/widget/gachaCard.widget.dart';
+import 'package:client/common/widget/gredientButton.widget.dart';
 import 'package:flutter/material.dart';
 
 class GachaPage extends StatefulWidget {
@@ -25,8 +25,9 @@ class _GachaPageState extends State<GachaPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         GradientButton(
-          borderRadius: BorderRadius.circular(25),
-          height: 50,
+          borderRadius: BorderRadius.circular(35),
+          width: 250,
+          height: 70,
           onPressed: () => showDialog(
             context: context,
             builder: (BuildContext context) => Dialog(
@@ -42,7 +43,7 @@ class _GachaPageState extends State<GachaPage> {
             'Gacha',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontSize: 32,
             ),
           ),
         ),
