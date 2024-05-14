@@ -82,7 +82,7 @@ class _Tile extends StatelessWidget {
           ),
           child: icon,
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 5),
         Text(
           label,
           style: const TextStyle(
@@ -90,7 +90,6 @@ class _Tile extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(width: 10),
       ]),
     );
   }

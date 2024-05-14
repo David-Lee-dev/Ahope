@@ -2,6 +2,7 @@ import 'package:client/page/collection.page.dart';
 import 'package:client/page/gacha.page.dart';
 import 'package:client/widget/bottom_nav/bottomNav.widget.dart';
 import 'package:client/widget/bottom_nav/bottomNavItem.widget.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -53,8 +54,13 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return MaterialApp(
       theme: ThemeData(
+        textTheme: GoogleFonts.orbitronTextTheme(textTheme).copyWith(
+          bodyMedium: GoogleFonts.orbitron(textStyle: textTheme.bodyMedium),
+        ),
         scaffoldBackgroundColor: const Color(0xff051732),
       ),
       home: Scaffold(
