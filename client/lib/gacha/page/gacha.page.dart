@@ -28,6 +28,8 @@ class _GachaPageState extends State<GachaPage> {
           borderRadius: BorderRadius.circular(35),
           width: 250,
           height: 70,
+          startColor: const Color(0xff5c5ae4),
+          endColor: const Color(0xffDE4981),
           onPressed: () => showDialog(
             context: context,
             builder: (BuildContext context) => Dialog(

@@ -6,6 +6,8 @@ class GradientButton extends StatelessWidget {
   final double height;
   final VoidCallback? onPressed;
   final Widget child;
+  final Color startColor;
+  final Color endColor;
 
   const GradientButton({
     super.key,
@@ -14,6 +16,8 @@ class GradientButton extends StatelessWidget {
     required this.height,
     required this.onPressed,
     required this.child,
+    required this.startColor,
+    required this.endColor,
   });
 
   @override
@@ -26,12 +30,12 @@ class GradientButton extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: borderRadius,
         color: Colors.red,
-        gradient: const LinearGradient(
-          begin: Alignment(-1.0, -1.0),
-          end: Alignment(1.0, 2.0),
+        gradient: LinearGradient(
+          begin: const Alignment(-1.0, -1.0),
+          end: const Alignment(1.0, 2.0),
           colors: [
-            Color(0xff5c5ae4),
-            Color(0xffDE4981),
+            startColor,
+            endColor,
           ],
         ),
       ),
