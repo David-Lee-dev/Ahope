@@ -17,8 +17,6 @@ class GachaPage extends StatefulWidget {
 }
 
 class _GachaPageState extends State<GachaPage> {
-  final int _remainSecondsForNextTicket = 100;
-
   @override
   Widget build(BuildContext context) {
     return Column(

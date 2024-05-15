@@ -30,10 +30,7 @@ class _AppState extends State<App> {
   static final List<Widget> _pages = <Widget>[
     const GachaPage(lastGachaTimestampe: 1714527654000, ticketCount: 2),
     CollectionPage(),
-    // const Center(
-    //   child: Text('Profile Page',
-    //       style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
-    // ),
+    CollectionPage(),
     const SettingsPage()
   ];
 
@@ -79,10 +76,10 @@ class _AppState extends State<App> {
               icon: Icon(Icons.collections, color: Colors.white),
               label: "Collections",
             ),
-            // BottomNavItem(
-            //   icon: Icon(Icons.price_change, color: Colors.white),
-            //   label: "Market",
-            // ),
+            BottomNavItem(
+              icon: Icon(Icons.price_change, color: Colors.white),
+              label: "Market",
+            ),
             BottomNavItem(
               icon: Icon(Icons.settings, color: Colors.white),
               label: "Setting",

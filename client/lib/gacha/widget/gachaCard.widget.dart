@@ -1,3 +1,4 @@
+import 'package:client/common/util/TopRightClipper.util.dart';
 import 'package:flutter/material.dart';
 
 class GachaCard extends StatelessWidget {
@@ -10,78 +11,61 @@ class GachaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return Stack(
       children: [
-        Container(
-          decoration: const BoxDecoration(
-            color: Color(0xff303F55),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
+        ClipPath(
+          clipper: TopRightClipper(),
+          child: Container(
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment(-1.0, -1.0),
+                end: Alignment(1.0, 2.0),
+                colors: [Color(0xff5c5ae4), Color(0xffDE4981)],
+              ),
+              borderRadius: BorderRadius.circular(20),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: 8,
-              left: 12,
-              right: 8,
-              bottom: 6,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  "No. 000",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(height: 60),
+                Container(
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                    color: const Color(0xff364458),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Image.asset(
+                    'assets/images/seat2.jpeg',
                   ),
                 ),
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    color: const Color(0xff556072),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30)),
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      padding: EdgeInsets.zero,
-                    ),
-                    child: GestureDetector(
-                      onTap: onClose,
-                      child: const Icon(Icons.close),
-                    ),
-                  ),
-                )
               ],
             ),
           ),
         ),
-        Container(
-          decoration: const BoxDecoration(
-            color: Color(0xff303F55),
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Container(
+              width: 55,
+              height: 55,
+              decoration: BoxDecoration(
+                color: const Color(0xff364458),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: ElevatedButton(
+                onPressed: onClose,
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: EdgeInsets.zero,
+                ),
+                child: const Icon(Icons.close),
+              ),
             ),
-          ),
-          child: Container(
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: Image.asset(
-              'assets/images/seat2.jpeg',
-            ),
-          ),
+          ],
         ),
       ],
     );
