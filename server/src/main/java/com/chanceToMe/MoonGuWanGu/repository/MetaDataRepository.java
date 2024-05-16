@@ -5,7 +5,9 @@ import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.MetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -78,6 +80,25 @@ public class MetaDataRepository {
         } else {
             throw new CustomException(ErrorCode.NON_EXISTED, null);
         }
+    }
+
+    public List<Map<String, Object>> getCategoryCount() {
+        String query = """
+            SELECT category, COUNT(*) AS total
+            FROM MetaData
+            GROUP BY category;
+            """;
+
+        return jdbcTemplate.query(query, (ResultSet rs, int rowNum) -> {
+            String category = rs.getString("category");
+            int total = rs.getInt("total");
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("category", category);
+            result.put("total", total);
+
+            return result;
+        });
     }
 
     private RowMapper<MetaData> rowMapper = new RowMapper<MetaData>() {

@@ -8,6 +8,7 @@ import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.MetaData;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
@@ -271,6 +272,33 @@ class MetaDataRepositoryTest {
         void nonExisted() {
             assertThatThrownBy(() -> metaDataRepository.delete(nonExistedUUID)).isInstanceOf(
                 CustomException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("getCategoryCount")
+    class GetCategoryCountTest {
+
+        @BeforeEach
+        void beforeEach() {
+            insertTestMetaData("test1", 0, 0, 0, false, "category1");
+            insertTestMetaData("test2", 0, 0, 0, false, "category1");
+            insertTestMetaData("test3", 0, 0, 0, false, "category2");
+        }
+
+        @Test
+        @DisplayName("category 별 MetaData 개수 조회")
+        void ideal() {
+            List<Map<String, Object>> result = metaDataRepository.getCategoryCount();
+
+            assertThat(result.size()).isEqualTo(2);
+            for(Map<String, Object> item : result) {
+                if (item.get("category") == "category1") {
+                    assertThat(item.get("total")).isEqualTo(2);
+                } else {
+                    assertThat(item.get("total")).isEqualTo(1);
+                }
+            }
         }
     }
 
