@@ -275,9 +275,10 @@ class MetaDataRepositoryTest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Nested
-    @DisplayName("getCategoryCount")
-    class GetCategoryCountTest {
+    @DisplayName("getMetadataListByCategory")
+    class GetMetadataListByCategoryTest {
 
         @BeforeEach
         void beforeEach() {
@@ -289,14 +290,14 @@ class MetaDataRepositoryTest {
         @Test
         @DisplayName("category 별 MetaData 개수 조회")
         void ideal() {
-            List<Map<String, Object>> result = metaDataRepository.getCategoryCount();
+            List<Map<String, Object>> result = metaDataRepository.getMetadataListByCategory();
 
             assertThat(result.size()).isEqualTo(2);
             for(Map<String, Object> item : result) {
                 if (item.get("category") == "category1") {
-                    assertThat(item.get("total")).isEqualTo(2);
-                } else {
-                    assertThat(item.get("total")).isEqualTo(1);
+                    assertThat(((List<UUID>) item.get("idList")).size()).isEqualTo(2);
+                } else if (item.get("category") == "category2"){
+                    assertThat(((List<UUID>) item.get("idList")).size()).isEqualTo(1);
                 }
             }
         }

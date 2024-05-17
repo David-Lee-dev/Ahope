@@ -40,3 +40,11 @@ CREATE TABLE card (
     foreign key (member) references member (id),
     foreign key (metadata) references metadata (id)
 );
+
+INSERT INTO card (id, member, metadata, seq)
+VALUES
+    ('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 1),
+    ('c1e03367-6c1b-4a82-b916-0b8a2d15c1a5', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 2),
+    ('d45b4219-f4c4-4b2b-bc5a-876ea85bd32e', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 3),
+    ('a3e3d052-1c9d-40c4-83e7-936127cfbe15', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 4),
+    ('d45b4219-f4c4-4b2b-bc5a-876ea85bd325', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 5);

@@ -1,11 +1,24 @@
 services:
-  postgres:
+  postgres-test:
     image: postgres:16.2
     restart: always
+    container_name: dev-db
     volumes:
-      - /Users/squarezero/workspace/db/dev-db/gacha-dev:/var/lib/postgresql/data
+      - /Users/squarezero/workspace/db/dev-db/ -dev:/var/lib/postgresql/data
     ports:
       - "9000:5432"
+    environment:
+      POSTGRES_USER: gacha
+      POSTGRES_PASSWORD: gacha
+      POSTGRES_DB: gacha
+  postgres-dev:
+    image: postgres:16.2
+    restart: always
+    container_name: test-db
+    volumes:
+      - /Users/squarezero/workspace/db/test-db/gacha-test:/var/lib/postgresql/data
+    ports:
+      - "9010:5432"
     environment:
       POSTGRES_USER: gacha
       POSTGRES_PASSWORD: gacha

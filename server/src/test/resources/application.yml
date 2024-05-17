@@ -1,7 +1,11 @@
 spring:
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:9010/gacha
+    username: gacha
+    password: gacha
+#    driver-class-name: org.h2.Driver
+#    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
 #    url: jdbc:h2:tcp://localhost/~/workspace/db/test-db/gacha_test;MODE=LEGACY
 #    username: test
 server:

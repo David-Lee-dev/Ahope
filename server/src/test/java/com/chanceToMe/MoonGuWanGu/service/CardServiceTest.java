@@ -102,4 +102,10 @@ class CardServiceTest {
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NON_EXISTED);
         }
     }
+
+    @Nested
+    @DisplayName("retrieveCardsByMember")
+    class RetrieveCardsByMemberTest {
+
+    }
 }

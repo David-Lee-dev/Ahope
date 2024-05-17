@@ -2,8 +2,8 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:9000/gacha
-    username: devuser
-    password: 1234
+    username: gacha
+    password: gacha
 server:
   port: 8080
 logging:

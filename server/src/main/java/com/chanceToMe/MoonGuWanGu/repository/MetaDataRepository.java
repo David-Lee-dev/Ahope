@@ -5,10 +5,12 @@ import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.MetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -82,20 +84,23 @@ public class MetaDataRepository {
         }
     }
 
-    public List<Map<String, Object>> getCategoryCount() {
+    public List<Map<String, Object>> getMetadataListByCategory() {
         String query = """
-            SELECT category, COUNT(*) AS total
-            FROM MetaData
-            GROUP BY category;
+                SELECT category, array_agg(id) AS id_list
+                FROM MetaData
+                GROUP BY category;
             """;
 
         return jdbcTemplate.query(query, (ResultSet rs, int rowNum) -> {
             String category = rs.getString("category");
-            int total = rs.getInt("total");
+            String idStringList = rs.getString("id_list");
+            List<UUID> idList = Arrays.stream(idStringList.substring(1, idStringList.length() - 1).split(","))
+                                      .map(UUID::fromString)
+                                      .collect(Collectors.toList());
 
             Map<String, Object> result = new HashMap<>();
             result.put("category", category);
-            result.put("total", total);
+            result.put("idList", idList);
 
             return result;
         });

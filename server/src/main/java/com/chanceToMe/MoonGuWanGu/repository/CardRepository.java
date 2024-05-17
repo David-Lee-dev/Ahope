@@ -31,7 +31,10 @@ public class CardRepository {
 
     public List<Card> findByMember(UUID memberId) {
         String query = """
-            SELECT c.id AS id, c.seq AS seq, m.id AS member, md.id AS metadata, md.image_url AS image_url, md.grade AS grade, md.category AS category 
+            SELECT 
+                c.id AS id, c.seq AS seq, 
+                m.id AS member, 
+                md.id AS metadata, md.image_url AS image_url, md.grade AS grade, md.category AS category, md.weight AS weight
             FROM card c 
             JOIN member m ON c.member = m.id 
             JOIN metadata md ON c.metadata = md.id 
@@ -50,9 +53,10 @@ public class CardRepository {
             UUID metaDataId = UUID.fromString(rs.getString("metadata"));
             String imageUrl = rs.getString("image_url");
             Integer grade = rs.getInt("grade");
+            Integer weight = rs.getInt("weight");
             String category = rs.getString("category");
             MetaData metaData = MetaData.builder().id(metaDataId).imageUrl(imageUrl).grade(grade)
-                                        .category(category).build();
+                                        .category(category).weight(weight).build();
 
             UUID cardId = UUID.fromString(rs.getString("id"));
             Integer seq = rs.getInt("seq");

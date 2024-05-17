@@ -246,4 +246,20 @@ class MoonGuWanGuApplicationTests {
                    .andExpect(status().isNotFound());
         }
     }
+
+    @Nested
+    @DisplayName("GET /api/card/{memberId}")
+    class RetrieveCardTest {
+
+        String testMemberId = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+
+        @Test
+        @DisplayName("정상 요청에 대해 category별 정보와 200 응답")
+        void idealRequest() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.get("/api/card?memberId=" + testMemberId)
+                                                  .contentType(MediaType.APPLICATION_JSON))
+                   .andExpect(jsonPath(".category").isNotEmpty()).andExpect(status().isOk());
+        }
+
+    }
 }

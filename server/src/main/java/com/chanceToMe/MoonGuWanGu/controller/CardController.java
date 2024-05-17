@@ -1,12 +1,8 @@
 package com.chanceToMe.MoonGuWanGu.controller;
 
-import com.chanceToMe.MoonGuWanGu.dto.CardDto;
 import com.chanceToMe.MoonGuWanGu.dto.CreateCardDto;
 import com.chanceToMe.MoonGuWanGu.service.CardService;
 import jakarta.validation.Valid;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,14 +32,8 @@ public class CardController {
     @GetMapping
     ResponseEntity retrieveCards(@RequestParam(value = "memberId") String memberId) {
 
-        List<CardDto> cardList = cardService.retrieveCardsByMember(UUID.fromString(memberId))
-                                            .stream().map(CardDto::new).toList();
-
-        Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("list", cardList);
-        responseBody.put("count", cardList.size());
-
-        return ResponseEntity.status(HttpStatus.OK).body(responseBody);
+        return ResponseEntity.status(HttpStatus.OK)
+                             .body(cardService.retrieveCardsByMember(UUID.fromString(memberId)));
     }
 
 }
