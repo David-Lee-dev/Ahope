@@ -1,8 +1,8 @@
-import 'package:client/common/widget/gredientButton.widget.dart';
+import 'package:client/widget/gredientButton.widget.dart';
 import 'package:flutter/material.dart';
 
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -32,6 +32,7 @@ public class MemberController {
       throw new CustomException(ErrorCode.INVALID, null);
     }
 
+
     memberService.createMember(dto.getEmail());
 
     return ResponseEntity.status(HttpStatus.CREATED).body(null);

@@ -1,4 +1,4 @@
-import 'package:client/common/util/TopRightClipper.util.dart';
+import 'package:client/util/TopRightClipper.util.dart';
 import 'package:flutter/material.dart';
 
 class GachaCard extends StatelessWidget {

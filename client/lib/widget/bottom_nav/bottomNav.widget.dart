@@ -1,4 +1,4 @@
-import 'package:client/common/widget/bottom_nav/bottomNavItem.widget.dart';
+import 'package:client/widget/bottom_nav/bottomNavItem.widget.dart';
 import 'package:flutter/material.dart';
 
 class BottomNav extends StatefulWidget {

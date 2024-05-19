@@ -17,14 +17,18 @@ public class MemberService {
   private MemberRepository memberRepository;
 
   public Member createMember(String email) {
-    Member member = Member.builder()
-                          .id(UUID.randomUUID())
-                          .email(email)
-                          .remainTicket(0)
-                          .build();
-
     try {
-      memberRepository.insert(member);
+      Member member = Member.builder().email(email).remainTicket(3).build();
+
+      try {
+       member = memberRepository.findByEmail(email);
+      } catch (Exception e) {
+        if (e instanceof EmptyResultDataAccessException) {
+          memberRepository.insert(member);
+        } else {
+          throw e;
+        }
+      }
 
       return member;
     } catch (Exception e) {

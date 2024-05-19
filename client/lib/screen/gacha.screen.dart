@@ -1,22 +1,22 @@
-import 'package:client/gacha/widget/gachaCard.widget.dart';
-import 'package:client/common/widget/gredientButton.widget.dart';
+import 'package:client/widget/gachaCard.widget.dart';
+import 'package:client/widget/gredientButton.widget.dart';
 import 'package:flutter/material.dart';
 
-class GachaPage extends StatefulWidget {
+class GachaScreen extends StatefulWidget {
   final int lastGachaTimestampe;
   final int ticketCount;
 
-  const GachaPage({
+  const GachaScreen({
     super.key,
     required this.lastGachaTimestampe,
     required this.ticketCount,
   });
 
   @override
-  State<GachaPage> createState() => _GachaPageState();
+  State<GachaScreen> createState() => _GachaScreenState();
 }
 
-class _GachaPageState extends State<GachaPage> {
+class _GachaScreenState extends State<GachaScreen> {
   @override
   Widget build(BuildContext context) {
     return Column(

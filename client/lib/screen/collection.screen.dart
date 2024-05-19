@@ -1,6 +1,6 @@
-import 'package:client/collection/widget/collectionCard.widget.dart';
-import 'package:client/collection/widget/collectionProgressBar.widget.dart';
-import 'package:client/common/util/TopRightClipper.util.dart';
+import 'package:client/util/TopRightClipper.util.dart';
+import 'package:client/widget/collectionCard.widget.dart';
+import 'package:client/widget/collectionProgressBar.widget.dart';
 import 'package:flutter/material.dart';
 
 final List<int> _dummyNum = <int>[
@@ -13,8 +13,8 @@ final List<int> _dummyNum = <int>[
   6,
 ];
 
-class CollectionPage extends StatelessWidget {
-  const CollectionPage({super.key});
+class CollectionScreen extends StatelessWidget {
+  const CollectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -34,6 +34,15 @@ public class MemberRepository {
         }, id);
     }
 
+    public Member findByEmail(String email) {
+        String query = "select * from member where email = ?";
+
+        return jdbcTemplate.queryForObject(query, (rs, rowNum) -> {
+            return new Member(UUID.fromString(rs.getString("id")), rs.getString("email"),
+                rs.getLong("last_gacha_timestamp"), rs.getInt("remain_ticket"));
+        }, email);
+    }
+
     public Member update(Member member) {
         String query = "update member set last_gacha_timestamp = ?, remain_ticket = ? where id = ?";
 

@@ -98,11 +98,38 @@ class MemberRepositoryTest {
         }
 
         @Test
-        @DisplayName("id로 MetaData 조회")
+        @DisplayName("id로 Member 조회")
         void ideal() {
             Member result = memberRepository.findById(testMemberId);
 
             assertThat(result.getId()).isEqualTo(testMemberId);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 경우 EmptyResultDataAccessException 예외 발생")
+        void nonExisted() {
+            assertThatThrownBy(() -> memberRepository.findById(nonExistedUUID)).isInstanceOf(
+                EmptyResultDataAccessException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("findByEmail")
+    class FindByEmailTest {
+
+        String testMemberEmail = "test@test.com";
+
+        @BeforeEach
+        void beforeEach() {
+            insertTestMember(testMemberEmail);
+        }
+
+        @Test
+        @DisplayName("email로 Member 조회")
+        void ideal() {
+            Member result = memberRepository.findByEmail(testMemberEmail);
+
+            assertThat(result.getEmail()).isEqualTo(testMemberEmail);
         }
 
         @Test

@@ -1,13 +1,22 @@
-import 'package:client/collection/page/collection.page.dart';
-import 'package:client/gacha/page/gacha.page.dart';
-import 'package:client/common/widget/bottom_nav/bottomNav.widget.dart';
-import 'package:client/common/widget/bottom_nav/bottomNavItem.widget.dart';
-import 'package:client/settings/settings.page.dart';
+import 'package:client/provider/member.provider.dart';
+import 'package:client/screen/collection.screen.dart';
+import 'package:client/screen/gacha.screen.dart';
+import 'package:client/screen/login.screen.dart';
+import 'package:client/screen/settings.screen.dart';
+import 'package:client/util/DiskStorageManager.util.dart';
+import 'package:client/widget/bottom_nav/bottomNav.widget.dart';
+import 'package:client/widget/bottom_nav/bottomNavItem.widget.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const App());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => MemberProvider(),
+      child: const App(),
+    ),
+  );
 }
 
 class App extends StatefulWidget {
@@ -19,7 +28,14 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   int _selectedIndex = 0;
+  String? _memberId;
   final PageController _pageController = PageController();
+
+  @override
+  void initState() {
+    super.initState();
+    DiskStorageManager.getMemberId().then((id) => {_memberId = id});
+  }
 
   @override
   void dispose() {
@@ -28,10 +44,10 @@ class _AppState extends State<App> {
   }
 
   static final List<Widget> _pages = <Widget>[
-    const GachaPage(lastGachaTimestampe: 1714527654000, ticketCount: 2),
-    CollectionPage(),
-    CollectionPage(),
-    const SettingsPage()
+    const GachaScreen(lastGachaTimestampe: 1714527654000, ticketCount: 2),
+    const CollectionScreen(),
+    const CollectionScreen(),
+    const SettingsScreen()
   ];
 
   void _onItemTapped(int index) {
@@ -51,42 +67,48 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return MaterialApp(
-      theme: ThemeData(
-        textTheme: GoogleFonts.orbitronTextTheme(textTheme).copyWith(
-          bodyMedium: GoogleFonts.orbitron(textStyle: textTheme.bodyMedium),
-        ),
-        scaffoldBackgroundColor: const Color(0xff051732),
-      ),
-      home: Scaffold(
-        body: PageView(
-          controller: _pageController,
-          onPageChanged: _onPageChanged,
-          children: _pages,
-        ),
-        bottomNavigationBar: BottomNav(
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          items: const [
-            BottomNavItem(
-              icon: Icon(Icons.home, color: Colors.white),
-              label: "Gacha",
+    return Consumer<MemberProvider>(
+      builder: (context, member, child) {
+        return MaterialApp(
+          theme: ThemeData(
+            textTheme: GoogleFonts.orbitronTextTheme(textTheme).copyWith(
+              bodyMedium: GoogleFonts.orbitron(textStyle: textTheme.bodyMedium),
             ),
-            BottomNavItem(
-              icon: Icon(Icons.collections, color: Colors.white),
-              label: "Collections",
-            ),
-            BottomNavItem(
-              icon: Icon(Icons.price_change, color: Colors.white),
-              label: "Market",
-            ),
-            BottomNavItem(
-              icon: Icon(Icons.settings, color: Colors.white),
-              label: "Setting",
-            ),
-          ],
-        ),
-      ),
+            scaffoldBackgroundColor: const Color(0xff051732),
+          ),
+          home: member.id == null
+              ? LoginScreen(member: member)
+              : Scaffold(
+                  body: PageView(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    children: _pages,
+                  ),
+                  bottomNavigationBar: BottomNav(
+                    currentIndex: _selectedIndex,
+                    onTap: _onItemTapped,
+                    items: const [
+                      BottomNavItem(
+                        icon: Icon(Icons.home, color: Colors.white),
+                        label: "Gacha",
+                      ),
+                      BottomNavItem(
+                        icon: Icon(Icons.collections, color: Colors.white),
+                        label: "Collections",
+                      ),
+                      BottomNavItem(
+                        icon: Icon(Icons.price_change, color: Colors.white),
+                        label: "Market",
+                      ),
+                      BottomNavItem(
+                        icon: Icon(Icons.settings, color: Colors.white),
+                        label: "Setting",
+                      ),
+                    ],
+                  ),
+                ),
+        );
+      },
     );
   }
 }
