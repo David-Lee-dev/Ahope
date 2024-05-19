@@ -3,6 +3,7 @@ package com.chanceToMe.MoonGuWanGu.controller;
 import com.chanceToMe.MoonGuWanGu.common.enums.ErrorCode;
 import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.dto.CreateMemberDto;
+import com.chanceToMe.MoonGuWanGu.dto.MemberDto;
 import com.chanceToMe.MoonGuWanGu.model.Member;
 import com.chanceToMe.MoonGuWanGu.service.MemberService;
 import java.util.UUID;
@@ -32,10 +33,9 @@ public class MemberController {
       throw new CustomException(ErrorCode.INVALID, null);
     }
 
+    Member member = memberService.createMember(dto.getEmail());
 
-    memberService.createMember(dto.getEmail());
-
-    return ResponseEntity.status(HttpStatus.CREATED).body(null);
+    return ResponseEntity.status(HttpStatus.CREATED).body(new MemberDto(member));
   }
 
   @GetMapping("/{memberId}")

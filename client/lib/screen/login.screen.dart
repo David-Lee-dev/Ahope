@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:client/model/member.model.dart';
 import 'package:client/provider/member.provider.dart';
+import 'package:client/util/MemberManager.util.dart';
 import 'package:client/widget/gredientButton.widget.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
@@ -20,7 +24,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
 
   void _login() {
-    if (_formKey.currentState?.validate() ?? false) {}
+    if (_formKey.currentState?.validate() ?? false) {
+      MemberManager.requestJoin(_emailController.text).then(
+        (member) => {
+          print(member.id),
+        },
+      );
+    }
   }
 
   @override
