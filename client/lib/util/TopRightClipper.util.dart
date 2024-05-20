@@ -17,7 +17,7 @@ class TopRightClipper extends CustomClipper<Path> {
       ..cubicTo(w - (clipSize / 2), 0, w - clipSize,
           (clipSize / 2) + (clipSize / 8), w - (clipSize / 2), clipSize * 0.75)
       ..lineTo(w - (clipSize / 4), clipSize * 0.75)
-      ..quadraticBezierTo(w, clipSize * 0.75, w, clipSize)
+      ..quadraticBezierTo(w, clipSize * 0.8, w, clipSize)
       ..lineTo(w, clipSize)
       ..lineTo(w, h)
       ..lineTo(0, h)
