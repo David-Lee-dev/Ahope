@@ -1,3 +1,4 @@
+import 'package:client/provider/collection.provider.dart';
 import 'package:client/provider/member.provider.dart';
 import 'package:client/screen/collection.screen.dart';
 import 'package:client/screen/gacha.screen.dart';
@@ -12,8 +13,11 @@ import 'package:flutter/material.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => MemberProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => MemberProvider()),
+        ChangeNotifierProvider(create: (context) => CollectionProvider()),
+      ],
       child: const App(),
     ),
   );
@@ -76,37 +80,40 @@ class _AppState extends State<App> {
             ),
             scaffoldBackgroundColor: const Color(0xff051732),
           ),
-          home: member.id == null
+          home: member.id == null && _memberId == null
               ? LoginScreen(member: member)
-              : Scaffold(
-                  body: PageView(
-                    controller: _pageController,
-                    onPageChanged: _onPageChanged,
-                    children: _pages,
-                  ),
-                  bottomNavigationBar: BottomNav(
-                    currentIndex: _selectedIndex,
-                    onTap: _onItemTapped,
-                    items: const [
-                      BottomNavItem(
-                        icon: Icon(Icons.home, color: Colors.white),
-                        label: "Gacha",
-                      ),
-                      BottomNavItem(
-                        icon: Icon(Icons.collections, color: Colors.white),
-                        label: "Collections",
-                      ),
-                      BottomNavItem(
-                        icon: Icon(Icons.price_change, color: Colors.white),
-                        label: "Market",
-                      ),
-                      BottomNavItem(
-                        icon: Icon(Icons.settings, color: Colors.white),
-                        label: "Setting",
-                      ),
-                    ],
-                  ),
-                ),
+              : Consumer<CollectionProvider>(
+                  builder: (context, collection, child) {
+                  return Scaffold(
+                    body: PageView(
+                      controller: _pageController,
+                      onPageChanged: _onPageChanged,
+                      children: _pages,
+                    ),
+                    bottomNavigationBar: BottomNav(
+                      currentIndex: _selectedIndex,
+                      onTap: _onItemTapped,
+                      items: const [
+                        BottomNavItem(
+                          icon: Icon(Icons.home, color: Colors.white),
+                          label: "Gacha",
+                        ),
+                        BottomNavItem(
+                          icon: Icon(Icons.collections, color: Colors.white),
+                          label: "Collections",
+                        ),
+                        BottomNavItem(
+                          icon: Icon(Icons.price_change, color: Colors.white),
+                          label: "Market",
+                        ),
+                        BottomNavItem(
+                          icon: Icon(Icons.settings, color: Colors.white),
+                          label: "Setting",
+                        ),
+                      ],
+                    ),
+                  );
+                }),
         );
       },
     );

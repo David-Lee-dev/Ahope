@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DiskStorageManager {
-  static Future<void> setData(String key, Object value) async {
+  static Future<void> setData(String key, dynamic value) async {
     final prefs = await _getPrefs();
 
     if (value is String) {
