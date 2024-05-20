@@ -24,7 +24,7 @@ class RequestManager {
     return Member.fromJson(jsonDecode(response.body));
   }
 
-  static Future<Collection> requestCollection(String? id) async {
+  static Future<List<Collection>> requestCollection(String? id) async {
     if (id == null) {
       throw Error();
     }
@@ -36,7 +36,9 @@ class RequestManager {
       },
     );
 
-    return Collection.fromJson(jsonDecode(response.body));
+    return (jsonDecode(response.body) as List)
+        .map((data) => Collection.fromJson(data))
+        .toList();
   }
 
   static Uri _getUrl(String path, [Map<String, String>? queryParams]) {

@@ -1,65 +1,89 @@
-import 'package:client/util/alias.dart';
+class CardItem {
+  String id;
+  int seq;
 
-class MetaData {
-  final List<CardUUID> cards;
-  final String imageUrl;
-  final int grade;
-  final int count;
-  final int weight;
+  CardItem({required this.id, required this.seq});
 
-  MetaData({
-    required this.cards,
-    required this.imageUrl,
-    required this.grade,
-    required this.count,
-    required this.weight,
-  });
-
-  factory MetaData.fromJson(Map<String, dynamic> json) {
-    return MetaData(
-      cards: List<CardUUID>.from(json['cards']),
-      imageUrl: json['imageUrl'],
-      grade: json['grade'],
-      count: json['count'],
-      weight: json['weight'],
+  factory CardItem.fromJson(Map<String, dynamic> json) {
+    return CardItem(
+      id: json['id'],
+      seq: json['seq'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'seq': seq,
+    };
   }
 }
 
-class Category {
-  final Map<MetaDataUUID, MetaData>? items;
+class MetaDataList {
+  List<CardItem>? cards;
+  String imageUrl;
+  int grade;
+  int weight;
+  String id;
+  String category;
 
-  Category({
-    required this.items,
+  MetaDataList({
+    this.cards,
+    required this.imageUrl,
+    required this.grade,
+    required this.weight,
+    required this.id,
+    required this.category,
   });
 
-  factory Category.fromJson(Map<String, dynamic> json) {
-    Map<String, MetaData> items = {};
+  factory MetaDataList.fromJson(Map<String, dynamic> json) {
+    var cardsJson = json['cards'] as List?;
+    List<CardItem>? cardsList =
+        cardsJson?.map((card) => CardItem.fromJson(card)).toList();
 
-    json.forEach((key, value) {
-      if (value != null) {
-        items[key] = MetaData.fromJson(value);
-      }
-    });
+    return MetaDataList(
+      cards: cardsList,
+      imageUrl: json['imageUrl'],
+      grade: json['grade'],
+      weight: json['weight'],
+      id: json['id'],
+      category: json['category'],
+    );
+  }
 
-    return Category(items: items);
+  Map<String, dynamic> toJson() {
+    return {
+      'cards': cards?.map((card) => card.toJson()).toList(),
+      'imageUrl': imageUrl,
+      'grade': grade,
+      'weight': weight,
+      'id': id,
+      'category': category,
+    };
   }
 }
 
 class Collection {
-  final Map<CategoryName, Category> categories;
+  List<MetaDataList> metaDataList;
+  String category;
 
-  Collection({
-    required this.categories,
-  });
+  Collection({required this.metaDataList, required this.category});
 
   factory Collection.fromJson(Map<String, dynamic> json) {
-    Map<String, Category> categories = {};
+    var metaDataListJson = json['metaDataList'] as List;
+    List<MetaDataList> metaDataList =
+        metaDataListJson.map((item) => MetaDataList.fromJson(item)).toList();
 
-    json.forEach((key, value) {
-      categories[key] = Category.fromJson(value);
-    });
+    return Collection(
+      metaDataList: metaDataList,
+      category: json['category'],
+    );
+  }
 
-    return Collection(categories: categories);
+  Map<String, dynamic> toJson() {
+    return {
+      'metaDataList': metaDataList.map((item) => item.toJson()).toList(),
+      'category': category,
+    };
   }
 }

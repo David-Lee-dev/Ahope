@@ -21,8 +21,8 @@ class _GachaScreenState extends State<GachaScreen> {
     final mp = Provider.of<MemberProvider>(context, listen: false);
     final cp = Provider.of<CollectionProvider>(context, listen: false);
 
-    RequestManager.requestCollection(mp.id).then((collection) {
-      cp.setCollection(collection);
+    RequestManager.requestCollection(mp.id).then((value) {
+      cp.setCollection(value);
     });
 
     super.initState();
