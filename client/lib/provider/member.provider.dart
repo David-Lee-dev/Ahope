@@ -1,3 +1,4 @@
+import 'package:client/model/member.model.dart';
 import 'package:flutter/material.dart';
 
 class MemberProvider extends ChangeNotifier {
@@ -10,6 +11,15 @@ class MemberProvider extends ChangeNotifier {
   String? get email => _email;
   int? get lastGachaTimestamp => _lastGachaTimestamp;
   int? get remainTicket => _remainTicket;
+
+  void setAll(Member member) {
+    _memberId = member.id;
+    _email = id;
+    _lastGachaTimestamp = lastGachaTimestamp;
+    _remainTicket = remainTicket;
+
+    notifyListeners();
+  }
 
   void setId(String id) {
     _memberId = id;

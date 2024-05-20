@@ -1,20 +1,13 @@
-import 'dart:convert';
-
-import 'package:client/model/member.model.dart';
 import 'package:client/provider/member.provider.dart';
 import 'package:client/util/DiskStorageManager.util.dart';
-import 'package:client/util/MemberManager.util.dart';
+import 'package:client/util/RequestManager.dart';
 import 'package:client/widget/gredientButton.widget.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
-  final MemberProvider member;
-
-  const LoginScreen({
-    super.key,
-    required this.member,
-  });
+  const LoginScreen({super.key});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -26,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() {
     if (_formKey.currentState?.validate() ?? false) {
-      MemberManager.requestJoin(_emailController.text).then(
+      RequestManager.requestJoin(_emailController.text).then(
         (data) {
           DiskStorageManager.setData('id', data.id);
           DiskStorageManager.setData('email', data.email);
@@ -35,15 +28,12 @@ class _LoginScreenState extends State<LoginScreen> {
           DiskStorageManager.setData('remainTicket', data.remainTicket);
 
           setState(() {
-            widget.member.setId(data.id);
-            widget.member.setEmail(data.email);
-            widget.member.setLastGachaTimestamp(data.lastGachaTimestamp);
-            widget.member.setRemainTicket(data.remainTicket);
+            Provider.of<MemberProvider>(context, listen: false).setAll(data);
           });
         },
       ).catchError((error) {
         // Handle errors here
-        print('An error occurred: $error');
+        throw error;
       });
     }
   }

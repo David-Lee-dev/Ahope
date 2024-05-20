@@ -1,6 +1,5 @@
+import 'package:client/model/collection.model.dart';
 import 'package:flutter/material.dart';
-
-typedef Collection = Map<String, Map<String, Map<String, dynamic>>>;
 
 class CollectionProvider extends ChangeNotifier {
   Collection? _collection;

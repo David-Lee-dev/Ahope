@@ -32,13 +32,18 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   int _selectedIndex = 0;
-  String? _memberId;
   final PageController _pageController = PageController();
 
   @override
   void initState() {
+    DiskStorageManager.getMember().then((member) {
+      setState(() {
+        if (member != null) {
+          Provider.of<MemberProvider>(context, listen: false).setAll(member);
+        }
+      });
+    });
     super.initState();
-    DiskStorageManager.getMemberId().then((id) => {_memberId = id});
   }
 
   @override
@@ -48,7 +53,7 @@ class _AppState extends State<App> {
   }
 
   static final List<Widget> _pages = <Widget>[
-    const GachaScreen(lastGachaTimestampe: 1714527654000, ticketCount: 2),
+    const GachaScreen(),
     const CollectionScreen(),
     const CollectionScreen(),
     const SettingsScreen()
@@ -80,40 +85,37 @@ class _AppState extends State<App> {
             ),
             scaffoldBackgroundColor: const Color(0xff051732),
           ),
-          home: member.id == null && _memberId == null
-              ? LoginScreen(member: member)
-              : Consumer<CollectionProvider>(
-                  builder: (context, collection, child) {
-                  return Scaffold(
-                    body: PageView(
-                      controller: _pageController,
-                      onPageChanged: _onPageChanged,
-                      children: _pages,
-                    ),
-                    bottomNavigationBar: BottomNav(
-                      currentIndex: _selectedIndex,
-                      onTap: _onItemTapped,
-                      items: const [
-                        BottomNavItem(
-                          icon: Icon(Icons.home, color: Colors.white),
-                          label: "Gacha",
-                        ),
-                        BottomNavItem(
-                          icon: Icon(Icons.collections, color: Colors.white),
-                          label: "Collections",
-                        ),
-                        BottomNavItem(
-                          icon: Icon(Icons.price_change, color: Colors.white),
-                          label: "Market",
-                        ),
-                        BottomNavItem(
-                          icon: Icon(Icons.settings, color: Colors.white),
-                          label: "Setting",
-                        ),
-                      ],
-                    ),
-                  );
-                }),
+          home: member.id == null
+              ? const LoginScreen()
+              : Scaffold(
+                  body: PageView(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    children: _pages,
+                  ),
+                  bottomNavigationBar: BottomNav(
+                    currentIndex: _selectedIndex,
+                    onTap: _onItemTapped,
+                    items: const [
+                      BottomNavItem(
+                        icon: Icon(Icons.home, color: Colors.white),
+                        label: "Gacha",
+                      ),
+                      BottomNavItem(
+                        icon: Icon(Icons.collections, color: Colors.white),
+                        label: "Collections",
+                      ),
+                      BottomNavItem(
+                        icon: Icon(Icons.price_change, color: Colors.white),
+                        label: "Market",
+                      ),
+                      BottomNavItem(
+                        icon: Icon(Icons.settings, color: Colors.white),
+                        label: "Setting",
+                      ),
+                    ],
+                  ),
+                ),
         );
       },
     );

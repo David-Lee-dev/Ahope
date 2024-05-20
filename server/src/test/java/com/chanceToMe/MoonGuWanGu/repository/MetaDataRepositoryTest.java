@@ -178,7 +178,6 @@ class MetaDataRepositoryTest {
         @DisplayName("category로 MetaData 조회")
         void ideal() {
             List<MetaData> result = metaDataRepository.findByCategory(testCategory);
-
             assertThat(result.size()).isEqualTo(3);
         }
     }
@@ -294,10 +293,10 @@ class MetaDataRepositoryTest {
 
             assertThat(result.size()).isEqualTo(2);
             for(Map<String, Object> item : result) {
-                if (item.get("category") == "category1") {
-                    assertThat(((List<UUID>) item.get("idList")).size()).isEqualTo(2);
-                } else if (item.get("category") == "category2"){
-                    assertThat(((List<UUID>) item.get("idList")).size()).isEqualTo(1);
+                if (item.get("category").equals("category1")) {
+                    assertThat(((List<UUID>) item.get("metaDataList")).size()).isEqualTo(2);
+                } else if (item.get("category").equals("category2")){
+                    assertThat(((List<UUID>) item.get("metaDataList")).size()).isEqualTo(1);
                 }
             }
         }

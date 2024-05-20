@@ -3,6 +3,8 @@ package com.chanceToMe.MoonGuWanGu.repository;
 import com.chanceToMe.MoonGuWanGu.common.enums.ErrorCode;
 import com.chanceToMe.MoonGuWanGu.common.exception.CustomException;
 import com.chanceToMe.MoonGuWanGu.model.MetaData;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -85,22 +87,51 @@ public class MetaDataRepository {
     }
 
     public List<Map<String, Object>> getMetadataListByCategory() {
+        ObjectMapper mapper = new ObjectMapper();
+
         String query = """
-                SELECT category, array_agg(id) AS id_list
-                FROM MetaData
-                GROUP BY category;
+            SELECT
+                category,
+                array_agg(
+                    json_build_object(
+                        'id', id,
+                        'imageUrl', image_url,
+                        'grade', grade,
+                        'count', count,
+                        'weight', weight,
+                        'category', category,
+                        'active', active
+                    )
+                ) AS metadata_list
+            FROM (
+                SELECT
+                    *
+                FROM
+                    metadata m\s
+                GROUP BY
+                    m.category, m.id, m.image_url, m.grade, m.count, m.weight
+            ) subquery
+            GROUP BY\s
+                category;
             """;
 
         return jdbcTemplate.query(query, (ResultSet rs, int rowNum) -> {
             String category = rs.getString("category");
-            String idStringList = rs.getString("id_list");
-            List<UUID> idList = Arrays.stream(idStringList.substring(1, idStringList.length() - 1).split(","))
-                                      .map(UUID::fromString)
-                                      .collect(Collectors.toList());
+            String[] metadataListStrings = (String[]) rs.getArray("metadata_list").getArray();
+
+            List<MetaData> metaDataList = Arrays.stream(metadataListStrings)
+                                                .map(data -> {
+                                                    try {
+                                                        return mapper.readValue(data, MetaData.class);
+                                                    } catch (JsonProcessingException e) {
+                                                        throw new RuntimeException(e);
+                                                    }
+                                                })
+                                                .collect(Collectors.toList());
 
             Map<String, Object> result = new HashMap<>();
             result.put("category", category);
-            result.put("idList", idList);
+            result.put("metaDataList", metaDataList);
 
             return result;
         });

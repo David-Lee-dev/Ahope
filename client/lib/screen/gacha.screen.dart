@@ -1,22 +1,33 @@
+import 'package:client/model/collection.model.dart';
+import 'package:client/provider/collection.provider.dart';
+import 'package:client/provider/member.provider.dart';
+import 'package:client/util/DiskStorageManager.util.dart';
+import 'package:client/util/RequestManager.dart';
 import 'package:client/widget/gachaCard.widget.dart';
 import 'package:client/widget/gredientButton.widget.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class GachaScreen extends StatefulWidget {
-  final int lastGachaTimestampe;
-  final int ticketCount;
-
-  const GachaScreen({
-    super.key,
-    required this.lastGachaTimestampe,
-    required this.ticketCount,
-  });
+  const GachaScreen({super.key});
 
   @override
   State<GachaScreen> createState() => _GachaScreenState();
 }
 
 class _GachaScreenState extends State<GachaScreen> {
+  @override
+  void initState() {
+    final mp = Provider.of<MemberProvider>(context, listen: false);
+    final cp = Provider.of<CollectionProvider>(context, listen: false);
+
+    RequestManager.requestCollection(mp.id).then((collection) {
+      cp.setCollection(collection);
+    });
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(

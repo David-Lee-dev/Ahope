@@ -6,7 +6,8 @@ import static org.mockito.Mockito.when;
 
 import com.chanceToMe.MoonGuWanGu.dto.CreateCardDto;
 import com.chanceToMe.MoonGuWanGu.service.CardService;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -53,7 +54,7 @@ class CardControllerTest {
         @DisplayName("memberId에 해당하는 Card List와 count, 200 응답")
         void ideal() {
             when(cardService.retrieveCardsByMember(any(UUID.class))).thenReturn(
-                new HashMap<String, Map<UUID, Object>>());
+                (List<Map<String, Object>>) new ArrayList());
 
             ResponseEntity result = cardController.retrieveCards(UUID.randomUUID().toString());
 

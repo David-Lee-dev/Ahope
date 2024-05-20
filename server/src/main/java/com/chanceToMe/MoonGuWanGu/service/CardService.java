@@ -9,7 +9,7 @@ import com.chanceToMe.MoonGuWanGu.repository.CardRepository;
 import com.chanceToMe.MoonGuWanGu.repository.MemberRepository;
 import com.chanceToMe.MoonGuWanGu.repository.MetaDataRepository;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,12 +64,39 @@ public class CardService {
         }
     }
 
-    public Map<String, Map<UUID, Object>> retrieveCardsByMember(UUID memberId) {
+    public List<Map<String, Object>> retrieveCardsByMember(UUID memberId) {
         Map<String, Map<UUID, Object>> categorizedCardData = initializeCategorizedCardData();
         cardRepository.findByMember(memberId)
                       .forEach(card -> updateCategorizedCardData(categorizedCardData, card));
 
-        return categorizedCardData;
+        List<Map<String, Object>> sortedCategoryList = new ArrayList<>();
+
+        categorizedCardData.entrySet().stream()
+                           .sorted((entry1, entry2) -> entry2.getKey().compareTo(entry1.getKey()))
+                           .forEachOrdered(entry -> {
+                               String category = entry.getKey();
+                               Map<UUID, Object> metaDataMapByUUID = entry.getValue();
+
+                               List<Map<String, Object>> metaDataList = new ArrayList<>();
+                               for (Object value : metaDataMapByUUID.values()) {
+                                   metaDataList.add((Map<String, Object>) value);
+                               }
+                               metaDataList.sort(Comparator.comparing(metaData -> (Integer) ((Map<String, Object>) metaData).get("weight")).reversed());
+
+                               metaDataList.forEach(metaDataAttributes -> {
+                                   if (metaDataAttributes.get("cards") != null) {
+                                       List<Map<String, Object>> cards = (List<Map<String, Object>>) metaDataAttributes.get("cards");
+                                       cards.sort(Comparator.comparing(card -> (Integer) card.get("seq")));
+                                   }
+                               });
+
+                               Map<String, Object> categoryData = new HashMap<>();
+                               categoryData.put("category", category);
+                               categoryData.put("metaDataList", metaDataList);
+                               sortedCategoryList.add(categoryData);
+                           });
+
+        return sortedCategoryList;
     }
 
 
@@ -98,42 +125,62 @@ public class CardService {
     }
 
     private Map<String, Map<UUID, Object>> initializeCategorizedCardData() {
-        Map<String, Map<UUID, Object>> categorizedCardData = new HashMap<>();
+        Map<String, Map<UUID, Object>> categorizedCardDataMap = new HashMap<>();
 
-        metaDataRepository.getMetadataListByCategory().forEach(data -> {
-            Map<UUID, Object> dataByUUID = new HashMap<>();
-            ((List<UUID>) data.get("idList")).forEach(id -> dataByUUID.put(id, null));
-            categorizedCardData.put((String) data.get("category"), dataByUUID);
-        });
+        List<Map<String, Object>> metadataByCategory = metaDataRepository.getMetadataListByCategory();
 
-        return categorizedCardData;
+        for (Map<String, Object> categoryData : metadataByCategory) {
+            String category = (String) categoryData.get("category");
+            List<MetaData> metaDataList = (List<MetaData>) categoryData.get("metaDataList");
+
+            Map<UUID, Object> metaDataMapByUUID = new HashMap<>();
+            for (MetaData metaData : metaDataList) {
+                Map<String, Object> metaDataAttributes = new HashMap<>();
+                metaDataAttributes.put("id", metaData.getId());
+                metaDataAttributes.put("imageUrl", metaData.getImageUrl());
+                metaDataAttributes.put("grade", metaData.getGrade());
+                metaDataAttributes.put("weight", metaData.getWeight());
+                metaDataAttributes.put("category", metaData.getCategory());
+                metaDataAttributes.put("cards", null);
+
+                metaDataMapByUUID.put(metaData.getId(), metaDataAttributes);
+            }
+
+            categorizedCardDataMap.put(category, metaDataMapByUUID);
+        }
+
+        return categorizedCardDataMap;
     }
 
     private void updateCategorizedCardData(Map<String, Map<UUID, Object>> categorizedCardData,
         Card card) {
         String category = card.getMetaData().getCategory();
-        UUID cardId = card.getMetaData().getId();
+        UUID metaDataId = card.getMetaData().getId();
 
         if (categorizedCardData.containsKey(category)) {
             Map<UUID, Object> dataById = categorizedCardData.get(category);
 
-            if (dataById.containsKey(cardId)) {
-                Map<String, Object> cardData = (Map<String, Object>) dataById.get(cardId);
+            if (dataById.containsKey(metaDataId)) {
+                Map<String, Object> metaDataAttributes = (Map<String, Object>) dataById.get(
+                    metaDataId);
 
-                if (cardData == null) {
-                    cardData = new HashMap<>();
-                    cardData.put("imageUrl", card.getMetaData().getImageUrl());
-                    cardData.put("grade", card.getMetaData().getGrade());
-                    cardData.put("weight", card.getMetaData().getWeight());
-                    cardData.put("count", 1);
-                    cardData.put("cards", new ArrayList<>(Collections.singletonList(card.getId())));
-                    dataById.put(cardId, cardData);
+                if (metaDataAttributes.get("cards") == null) {
+                    List<Map<String, Object>> cardsList = new ArrayList<>();
+                    Map<String, Object> cardAttributes = new HashMap<>();
+                    cardAttributes.put("id", card.getId());
+                    cardAttributes.put("seq", card.getSeq());
+                    cardsList.add(cardAttributes);
+                    metaDataAttributes.put("cards", cardsList);
                 } else {
-                    cardData.put("count", (Integer) cardData.get("count") + 1);
-                    List<UUID> cards = (List<UUID>) cardData.get("cards");
-                    cards.add(card.getId());
+                    List<Map<String, Object>> cardsList = (List<Map<String, Object>>) metaDataAttributes.get(
+                        "cards");
+                    Map<String, Object> cardAttributes = new HashMap<>();
+                    cardAttributes.put("id", card.getId());
+                    cardAttributes.put("seq", card.getSeq());
+                    cardsList.add(cardAttributes);
                 }
             }
         }
     }
+
 }
