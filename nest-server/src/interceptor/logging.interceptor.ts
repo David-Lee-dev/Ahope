@@ -9,21 +9,20 @@ export class LoggingInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const now = Date.now();
-    const requset = context.switchToHttp().getRequest();
-
+    const request = context.switchToHttp().getRequest();
     return next.handle().pipe(
       tap({
         next: (val: unknown): void => {
           const processingTimeMs = Date.now() - now;
 
           if (processingTimeMs < 1000) {
-            this.logging.info(requset.method, requset.url, processingTimeMs);
+            this.logging.info(request.method, request.url, processingTimeMs);
           } else {
-            this.logging.warn(requset.method, requset.url, processingTimeMs);
+            this.logging.warn(request.method, request.url, processingTimeMs);
           }
         },
         error: (error: Error): void => {
-          this.logging.error(error, requset.method, requset.url, Date.now() - now);
+          this.logging.error(error, request.method, request.url, Date.now() - now);
         },
       }),
     );

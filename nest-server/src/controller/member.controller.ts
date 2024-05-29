@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Inject, Param, ParseUUIDPipe, Post, ValidationPipe } from '@nestjs/common';
 import { CreateMemberDto } from 'src/dto';
 import { MemberService } from 'src/service';
-import { UUID } from 'typeorm/driver/mongodb/bson.typings';
+import { UUID } from 'crypto';
 
 @Controller('api/member')
 export class MemberController {

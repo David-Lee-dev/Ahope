@@ -1,3 +1,4 @@
+import { UUID } from 'crypto';
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
@@ -5,7 +6,7 @@ export class Metadata {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 500, unique: true })
+  @Column({ name: 'image_url', length: 500, unique: true })
   imageUrl: string;
 
   @Column({ default: 0 })
@@ -22,4 +23,25 @@ export class Metadata {
 
   @Column({ length: 255 })
   category: string;
+
+  static create(
+    id: UUID | null,
+    imageUrl: string,
+    category: string,
+    count: number = 0,
+    grade: number = 0,
+    weight: number = 0,
+    active: boolean = true,
+  ) {
+    const metaData = new Metadata();
+    if (id) metaData.id = id;
+    metaData.imageUrl = imageUrl;
+    metaData.category = category;
+    metaData.count = count;
+    metaData.grade = grade;
+    metaData.weight = weight;
+    metaData.active = active;
+
+    return metaData;
+  }
 }

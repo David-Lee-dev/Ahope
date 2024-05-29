@@ -1,3 +1,4 @@
+import { CardController } from './card.controller';
 import { MemberController } from './member.controller';
 
-export { MemberController };
+export { CardController, MemberController };

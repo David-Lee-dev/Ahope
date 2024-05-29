@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { UUID } from 'typeorm/driver/mongodb/bson.typings';
+import { UUID } from 'crypto';
 
 @Entity()
 export class Member {

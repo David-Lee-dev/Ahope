@@ -17,4 +17,13 @@ export class Card {
   @ManyToOne(() => Metadata)
   @JoinColumn({ name: 'metadata' })
   metadata: Metadata;
+
+  static create(member: Member, metadata: Metadata) {
+    const card = new Card();
+    card.seq = metadata.count;
+    card.member = member;
+    card.metadata = metadata;
+
+    return card;
+  }
 }

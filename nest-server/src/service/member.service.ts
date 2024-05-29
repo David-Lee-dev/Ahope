@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { Member } from 'src/entity';
 import { ServiceException } from 'src/exception';
 import { DataSource, Repository } from 'typeorm';
-import { UUID } from 'typeorm/driver/mongodb/bson.typings';
+import { UUID } from 'crypto';
 
 @Injectable()
 export class MemberService {

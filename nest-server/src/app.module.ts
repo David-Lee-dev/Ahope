@@ -5,9 +5,10 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor, TimeoutInterceptor } from './interceptor';
+import { CardModule } from './module/card.module';
 
 @Module({
-  imports: [getLoggerConfig(), getEnvConfig(), getDbConfig(), CommonModule, MemberModule],
+  imports: [getLoggerConfig(), getEnvConfig(), getDbConfig(), CommonModule, CardModule, MemberModule],
   controllers: [],
   providers: [
     {
