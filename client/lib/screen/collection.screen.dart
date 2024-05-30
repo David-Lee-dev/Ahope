@@ -85,8 +85,22 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   ),
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 65),
+                    SizedBox(
+                      height: 65,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 10, left: 15),
+                        child: Text(
+                          _selectedCollection!.category.split('_')[1],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -108,32 +122,23 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
+            Positioned(
+              right: 0,
+              child: InkWell(
+                onTap: () {
+                  _unselectCollection();
+                  Navigator.pop(context);
+                },
+                child: Container(
                   width: 55,
                   height: 55,
                   decoration: BoxDecoration(
-                    color: const Color.fromRGBO(54, 68, 88, 0.7),
+                    color: const Color.fromRGBO(54, 68, 88, 1),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _unselectCollection();
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      padding: EdgeInsets.zero,
-                    ),
-                    child: const Icon(Icons.close),
-                  ),
+                  child: const Icon(Icons.close, color: Colors.white),
                 ),
-              ],
+              ),
             ),
           ],
         );
