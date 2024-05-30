@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { MemberController } from 'src/controller';
 import { CreateMemberDto } from 'src/dto';
-import { Member } from 'src/entity';
+import { MemberEntity } from 'src/entity';
 import { MemberService } from 'src/service';
 import { DataSource } from 'typeorm';
 
@@ -22,7 +22,7 @@ describe('MemberController', () => {
   describe('createMember', () => {
     it('should return saved member', async () => {
       const testUUID = randomUUID() as any;
-      const member = Member.create(testUUID, 'test email');
+      const member = MemberEntity.create(testUUID, 'test email');
       const dto = new CreateMemberDto('test email');
 
       jest.spyOn(memberService, 'saveMember').mockResolvedValue(member);
@@ -35,7 +35,7 @@ describe('MemberController', () => {
   describe('getMember', () => {
     it('should return member', async () => {
       const testUUID = randomUUID() as any;
-      const member = Member.create(testUUID, 'test email');
+      const member = MemberEntity.create(testUUID, 'test email');
 
       jest.spyOn(memberService, 'findMemberById').mockResolvedValue(member);
 

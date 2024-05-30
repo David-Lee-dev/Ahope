@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { UUID } from 'crypto';
 
 @Entity()
-export class Member {
+export class MemberEntity {
   @PrimaryGeneratedColumn('uuid')
   id: UUID;
 
@@ -15,8 +15,13 @@ export class Member {
   @Column({ name: 'remain_ticket', default: 0 })
   remainTicket: number = 0;
 
+  draw() {
+    this.lastGachaTimestamp = new Date().getTime();
+    this.remainTicket = Math.max(0, this.remainTicket - 1);
+  }
+
   static create(id: UUID | null, email: string, lastGachaTimestamp: number | null = null, remainTicket: number = 0) {
-    const member = new Member();
+    const member = new MemberEntity();
     if (id) member.id = id;
     member.email = email;
     member.lastGachaTimestamp = lastGachaTimestamp;

@@ -12,6 +12,6 @@ export class CardController {
 
   @Get('member/:id/card')
   async retrieveCards(@Param('id', new ParseUUIDPipe()) memberId: UUID) {
-    return await this.cardService.findCardsByMember(memberId);
+    return await this.cardService.findCards(memberId);
   }
 }

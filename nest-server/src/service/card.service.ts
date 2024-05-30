@@ -1,51 +1,48 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { UUID } from 'crypto';
-import { Card, Member, Metadata } from 'src/entity';
+import { CardEntity, MemberEntity, MetadataEntity } from 'src/entity';
 import { ServiceException } from 'src/exception';
+import { Card, Category, MetadataAttributes, MetadataByCategory, MetadataID } from 'src/types';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 
 @Injectable()
 export class CardService {
-  private cardRepository: Repository<Card>;
-  private memberRepository: Repository<Member>;
-  private metadataRepository: Repository<Metadata>;
+  private cardRepository: Repository<CardEntity>;
+  private memberRepository: Repository<MemberEntity>;
+  private metadataRepository: Repository<MetadataEntity>;
 
   constructor(@InjectDataSource() private dataSource: DataSource) {
     if (!dataSource) throw new Error('data source is rquired');
 
-    this.cardRepository = dataSource.getRepository(Card);
-    this.memberRepository = dataSource.getRepository(Member);
-    this.metadataRepository = dataSource.getRepository(Metadata);
+    this.cardRepository = dataSource.getRepository(CardEntity);
+    this.memberRepository = dataSource.getRepository(MemberEntity);
+    this.metadataRepository = dataSource.getRepository(MetadataEntity);
   }
 
-  async saveCard(memberId: UUID): Promise<Card> {
+  async saveCard(memberId: UUID): Promise<CardEntity> {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const member: Member = await this.memberRepository.findOne({ where: { id: memberId } });
-      const metadata: Metadata = await queryRunner.manager
-        .createQueryBuilder(Metadata, 'metadata')
+      const member: MemberEntity = await this.memberRepository.findOne({ where: { id: memberId } });
+      const metadata: MetadataEntity = await queryRunner.manager
+        .createQueryBuilder(MetadataEntity, 'metadata')
         .setLock('pessimistic_read')
         .where({ id: await this.getTargetMetadataId() })
         .getOneOrFail();
 
-      metadata.count++;
+      member.draw();
+      metadata.increaseCount();
+      const card: CardEntity = CardEntity.create(member, metadata);
+
       await queryRunner.manager.save(metadata);
-
-      member.lastGachaTimestamp = new Date().getTime();
-      member.remainTicket = Math.max(0, member.remainTicket - 1);
       await this.memberRepository.save(member);
-
-      const card: Card = Card.create(member, metadata);
-      console.log(card);
-      const savedCard: Card = await this.cardRepository.save(card);
-
+      await this.cardRepository.save(card);
       await queryRunner.commitTransaction();
 
-      return savedCard;
+      return card;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new ServiceException(error);
@@ -54,68 +51,64 @@ export class CardService {
     }
   }
 
-  async findCardsByMember(memberId: UUID): Promise<Card[]> {
-    const query = `
-    SELECT 
-        c.id AS id, c.seq AS seq, 
-        m.id AS member, 
-        md.id AS metadata, md.image_url AS image_url, md.grade AS grade, md.category AS category, md.weight AS weight
-    FROM card c 
-    JOIN member m ON c.member = m.id 
-    JOIN metadata md ON c.metadata = md.id 
-    WHERE c.member = '${memberId}';
-    `;
-    const cards: Card[] = await this.cardRepository.query(query);
-    const categorizedCardData = await this.initializeCategorizedCardData();
+  async findCards(memberId: UUID): Promise<CardEntity[]> {
+    const categorizedCardMap: Map<
+      Category,
+      Map<MetadataID, MetadataAttributes>
+    > = await this.initializeCategorizedCardMap();
+    (await this.findCardsByMember(memberId)).forEach(card => this.updateCategorizedCardMap(categorizedCardMap, card));
+
     const sortedCategoryList = [];
-
-    cards.forEach(card => this.updateCategorizedCardData(categorizedCardData, card));
-
-    Array.from(categorizedCardData.entries())
-      .sort((entry1, entry2) => entry2[0].localeCompare(entry1[0]))
+    Array.from(categorizedCardMap.entries())
+      .sort(
+        (
+          entry1: [Category, Map<MetadataID, MetadataAttributes>],
+          entry2: [Category, Map<MetadataID, MetadataAttributes>],
+        ) => entry2[0].localeCompare(entry1[0]),
+      )
       .forEach(entry => {
         const category = entry[0];
-        const metaDataMapByUUID = entry[1];
+        const metadataMap = entry[1];
+        const metadataList = Array.from(metadataMap.values());
 
-        const metaDataList = Array.from(metaDataMapByUUID.values());
-        metaDataList.sort((metaData1: Metadata, metaData2: Metadata) => metaData2.weight - metaData1.weight);
+        metadataList
+          .sort((metadata1: MetadataAttributes, metadata2: MetadataAttributes) => metadata2.weight - metadata1.weight)
+          .forEach((metaDataAttributes: MetadataAttributes) => {
+            if (metaDataAttributes.cards) {
+              metaDataAttributes.cards.sort((card1, card2) => card1.seq - card2.seq);
+            }
+          });
 
-        metaDataList.forEach((metaDataAttributes: any) => {
-          if (metaDataAttributes.cards) {
-            const cards = metaDataAttributes.cards;
-            cards.sort((card1, card2) => card1.seq - card2.seq);
-          }
-        });
-
-        const categoryData = {
+        sortedCategoryList.push({
           category: category,
-          metaDataList: metaDataList,
-        };
-
-        sortedCategoryList.push(categoryData);
+          metadataList: metadataList,
+        });
       });
 
     return sortedCategoryList;
   }
 
-  private async getTargetMetadataId() {
-    const metadataList: Metadata[] = await this.metadataRepository.find({
-      where: { active: true },
-      order: { weight: 'DESC' },
-    });
+  private async findCardsByMember(memberId: UUID): Promise<Card[]> {
+    const query = `
+    SELECT 
+        c.id AS id, 
+        c.seq AS seq, 
+        m.id AS member, 
+        md.id AS metadata, 
+        md.image_url AS imageUrl, 
+        md.grade AS grade, 
+        md.category AS category, 
+        md.weight AS weight
+    FROM card c 
+    JOIN member m ON c.member = m.id 
+    JOIN metadata md ON c.metadata = md.id 
+    WHERE c.member = '${memberId}';
+    `;
 
-    const randomNumber: number = Math.floor(Math.random() * 100000) + 1;
-
-    for (const metadata of metadataList) {
-      if (randomNumber > metadata.weight) {
-        return metadata.id;
-      }
-      return 'd6e094f3-56e0-46be-84e8-ae33a2b049d5';
-    }
+    return await this.cardRepository.query(query);
   }
 
-  private async initializeCategorizedCardData() {
-    const categorizedCardDataMap = new Map();
+  private async findMetadatasByCategory(): Promise<MetadataByCategory[]> {
     const query = `
     SELECT
         category,
@@ -141,56 +134,73 @@ export class CardService {
     GROUP BY
         category;
     `;
-    const metadataByCategory = await this.metadataRepository.manager.query(query);
-    for (const categoryData of metadataByCategory) {
-      const category = categoryData.category;
-      const metadataList = categoryData.list;
 
-      const metaDataMapByUUID = new Map();
-      for (const metaData of metadataList) {
-        const metaDataAttributes = {
-          id: metaData.id,
-          imageUrl: metaData.imageUrl,
-          grade: metaData.grade,
-          weight: metaData.weight,
-          category: metaData.category,
+    return await this.metadataRepository.query(query);
+  }
+
+  private async getTargetMetadataId(): Promise<MetadataID> {
+    const metadataList: MetadataEntity[] = await this.metadataRepository.find({
+      where: { active: true },
+      order: { weight: 'DESC' },
+    });
+
+    const randomNumber: number = Math.floor(Math.random() * 100000) + 1;
+
+    for (const metadata of metadataList) {
+      if (randomNumber > metadata.weight) {
+        return metadata.id as UUID;
+      }
+      return metadataList[0].id as UUID;
+    }
+  }
+
+  private async initializeCategorizedCardMap(): Promise<Map<Category, Map<MetadataID, MetadataAttributes>>> {
+    const categorizedCardMap = new Map<Category, Map<UUID, MetadataAttributes>>();
+    const metadataByCategory: MetadataByCategory[] = await this.findMetadatasByCategory();
+
+    metadataByCategory.forEach((metadata: MetadataByCategory) => {
+      const metadataMapByUUID = new Map<UUID, MetadataAttributes>();
+
+      metadata.list.forEach(data => {
+        const metaDataAttributes: MetadataAttributes = {
+          id: data.id,
+          imageUrl: data.imageUrl,
+          grade: data.grade,
+          weight: data.weight,
+          category: data.category,
           cards: null,
         };
 
-        metaDataMapByUUID.set(metaData.id, metaDataAttributes);
-      }
+        metadataMapByUUID.set(data.id as UUID, metaDataAttributes);
+      });
 
-      categorizedCardDataMap.set(category, metaDataMapByUUID);
-    }
+      categorizedCardMap.set(metadata.category, metadataMapByUUID);
+    });
 
-    return categorizedCardDataMap;
+    return categorizedCardMap;
   }
 
-  private updateCategorizedCardData(categorizedCardData, card) {
+  private updateCategorizedCardMap(
+    categorizedCardMap: Map<Category, Map<MetadataID, MetadataAttributes>>,
+    card: Card,
+  ): void {
     const category = card.category;
-    const metaDataId = card.metadata;
+    const metadataId = card.metadata;
 
-    if (categorizedCardData.has(category)) {
-      const dataById = categorizedCardData.get(category);
+    if (categorizedCardMap.has(category)) {
+      const cardsByMetadataOfCategory: Map<MetadataID, MetadataAttributes> = categorizedCardMap.get(category);
 
-      if (dataById.has(metaDataId)) {
-        const metaDataAttributes = dataById.get(metaDataId);
+      if (cardsByMetadataOfCategory.has(metadataId)) {
+        const metaDataAttributes: MetadataAttributes = cardsByMetadataOfCategory.get(metadataId);
+        const sanitizedCard = {
+          id: card.id,
+          seq: card.seq,
+        } as Card;
 
         if (!metaDataAttributes.cards) {
-          const cardsList = [];
-          const cardAttributes = {
-            id: card.id,
-            seq: card.seq,
-          };
-          cardsList.push(cardAttributes);
-          metaDataAttributes.cards = cardsList;
+          metaDataAttributes.cards = [sanitizedCard];
         } else {
-          const cardsList = metaDataAttributes.cards;
-          const cardAttributes = {
-            id: card.id,
-            seq: card.seq,
-          };
-          cardsList.push(cardAttributes);
+          metaDataAttributes.cards.push(sanitizedCard);
         }
       }
     }

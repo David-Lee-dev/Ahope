@@ -23,6 +23,7 @@ export class LoggingInterceptor implements NestInterceptor {
         },
         error: (error: Error): void => {
           this.logging.error(error, request.method, request.url, Date.now() - now);
+          throw error;
         },
       }),
     );

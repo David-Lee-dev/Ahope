@@ -1,25 +1,25 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { Member } from './member.entity';
-import { Metadata } from './metadata.entity';
+import { MemberEntity } from './member.entity';
+import { MetadataEntity } from './metadata.entity';
 
 @Entity()
-export class Card {
+export class CardEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'bigint' })
   seq: number;
 
-  @ManyToOne(() => Member)
+  @ManyToOne(() => MemberEntity)
   @JoinColumn({ name: 'member' })
-  member: Member;
+  member: MemberEntity;
 
-  @ManyToOne(() => Metadata)
+  @ManyToOne(() => MetadataEntity)
   @JoinColumn({ name: 'metadata' })
-  metadata: Metadata;
+  metadata: MetadataEntity;
 
-  static create(member: Member, metadata: Metadata) {
-    const card = new Card();
+  static create(member: MemberEntity, metadata: MetadataEntity) {
+    const card = new CardEntity();
     card.seq = metadata.count;
     card.member = member;
     card.metadata = metadata;

@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { Member } from 'src/entity';
+import { MemberEntity } from 'src/entity';
 import { ServiceException } from 'src/exception';
 import { DataSource, Repository } from 'typeorm';
 import { UUID } from 'crypto';
 
 @Injectable()
 export class MemberService {
-  private memberRepository: Repository<Member>;
+  private memberRepository: Repository<MemberEntity>;
 
   constructor(@InjectDataSource() private dataSource: DataSource) {
     if (!dataSource) return;
 
-    this.memberRepository = dataSource.getRepository(Member);
+    this.memberRepository = dataSource.getRepository(MemberEntity);
   }
 
-  async saveMember(member: Member): Promise<Member> {
+  async saveMember(member: MemberEntity): Promise<MemberEntity> {
     try {
       return await this.memberRepository.save(member);
     } catch (error) {
@@ -23,7 +23,7 @@ export class MemberService {
     }
   }
 
-  async findMemberById(id: UUID): Promise<Member> {
+  async findMemberById(id: UUID): Promise<MemberEntity> {
     try {
       return await this.memberRepository.findOne({ where: { id } });
     } catch (error) {

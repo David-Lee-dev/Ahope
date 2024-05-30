@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty } from 'class-validator';
-import { Member } from 'src/entity';
+import { MemberEntity } from 'src/entity';
 
 export class CreateMemberDto {
   @IsEmail()
@@ -11,6 +11,6 @@ export class CreateMemberDto {
   }
 
   static toMemberEntity(dto: CreateMemberDto) {
-    return Member.create(null, dto.email);
+    return MemberEntity.create(null, dto.email);
   }
 }

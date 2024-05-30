@@ -1,5 +1,5 @@
-import { Card } from './card.entity';
-import { Member } from './member.entity';
-import { Metadata } from './metadata.entity';
+import { CardEntity } from './card.entity';
+import { MemberEntity } from './member.entity';
+import { MetadataEntity } from './metadata.entity';
 
-export { Card, Member, Metadata };
+export { CardEntity, MemberEntity, MetadataEntity };
