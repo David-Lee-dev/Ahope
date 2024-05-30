@@ -1,7 +1,7 @@
 import { UUID } from 'crypto';
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'metadata' })
 export class MetadataEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

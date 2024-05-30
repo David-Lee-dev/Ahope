@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 't
 import { MemberEntity } from './member.entity';
 import { MetadataEntity } from './metadata.entity';
 
-@Entity()
+@Entity({ name: 'card' })
 export class CardEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

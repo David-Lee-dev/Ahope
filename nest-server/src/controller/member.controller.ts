@@ -9,11 +9,11 @@ export class MemberController {
 
   @Post()
   async createMember(@Body() createMemberDto: CreateMemberDto) {
-    return { data: await this.memberService.saveMember(CreateMemberDto.toMemberEntity(createMemberDto)) };
+    return await this.memberService.saveMember(CreateMemberDto.toMemberEntity(createMemberDto));
   }
 
   @Get(':id')
   async getMember(@Param('id', new ParseUUIDPipe()) id: UUID) {
-    return { data: await this.memberService.findMemberById(id) };
+    return await this.memberService.findMemberById(id);
   }
 }

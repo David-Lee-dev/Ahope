@@ -64,7 +64,7 @@ export class CardService {
         (
           entry1: [Category, Map<MetadataID, MetadataAttributes>],
           entry2: [Category, Map<MetadataID, MetadataAttributes>],
-        ) => entry2[0].localeCompare(entry1[0]),
+        ) => entry1[0].localeCompare(entry2[0]),
       )
       .forEach(entry => {
         const category = entry[0];

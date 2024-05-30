@@ -28,7 +28,7 @@ describe('MemberController', () => {
       jest.spyOn(memberService, 'saveMember').mockResolvedValue(member);
 
       const result = await memberController.createMember(dto);
-      expect(result).toEqual({ data: member });
+      expect(result).toEqual(member);
     });
   });
 
@@ -40,7 +40,7 @@ describe('MemberController', () => {
       jest.spyOn(memberService, 'findMemberById').mockResolvedValue(member);
 
       const result = await memberController.getMember(testUUID);
-      expect(result).toEqual({ data: member });
+      expect(result).toEqual(member);
     });
   });
 });
