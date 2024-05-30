@@ -1,13 +1,34 @@
+import 'package:client/model/metaData.model.dart';
 import 'package:client/util/TopRightClipper.util.dart';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
-class CollcetionCard extends StatelessWidget {
-  final VoidCallback onClose;
+class CollcetionCard extends StatefulWidget {
+  final Metadata data;
 
   const CollcetionCard({
     super.key,
-    required this.onClose,
+    required this.data,
   });
+
+  @override
+  State<CollcetionCard> createState() => _CollcetionCardState();
+}
+
+class _CollcetionCardState extends State<CollcetionCard> {
+  bool showImage = false;
+
+  @override
+  void initState() {
+    Future.delayed(const Duration(milliseconds: 500)).then((_) {
+      if (mounted) {
+        setState(() {
+          showImage = true;
+        });
+      }
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +50,34 @@ class CollcetionCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 28),
-                Container(
-                  clipBehavior: Clip.hardEdge,
-                  decoration: BoxDecoration(
-                    color: const Color(0xff364458),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Image.asset(
-                    'assets/images/seat2.jpeg',
+                AspectRatio(
+                  aspectRatio: 1,
+                  child: Container(
+                    clipBehavior: Clip.hardEdge,
+                    decoration: BoxDecoration(
+                      color: const Color(0xff364458),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Image.network(
+                      widget.data.imageUrl,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        bool imageLoaded = false;
+                        if (loadingProgress == null) imageLoaded = true;
+
+                        return showImage && imageLoaded
+                            ? child
+                            : Shimmer.fromColors(
+                                baseColor: const Color(0xff051732),
+                                highlightColor: const Color(0xFF3F3F3F),
+                                period: const Duration(milliseconds: 500),
+                                child: Container(
+                                  decoration:
+                                      const BoxDecoration(color: Colors.black),
+                                  child: const Text(''),
+                                ),
+                              );
+                      },
+                    ),
                   ),
                 ),
               ],

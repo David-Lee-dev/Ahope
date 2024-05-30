@@ -32,7 +32,6 @@ class _LoginScreenState extends State<LoginScreen> {
           });
         },
       ).catchError((error) {
-        // Handle errors here
         throw error;
       });
     }

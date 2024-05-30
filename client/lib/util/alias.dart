@@ -1,5 +1,5 @@
 typedef CategoryName = String;
-typedef MetaDataUUID = String;
+typedef MetadataUUID = String;
 typedef CardUUID = String;
 typedef CollectionType
-    = Map<CategoryName, Map<MetaDataUUID, Map<CardUUID, dynamic>>>;
+    = Map<CategoryName, Map<MetadataUUID, Map<CardUUID, dynamic>>>;

@@ -1,6 +1,6 @@
 import 'package:client/model/cardItem.model.dart';
 
-class MetaData {
+class Metadata {
   List<CardItem>? cards;
   String imageUrl;
   int grade;
@@ -8,7 +8,7 @@ class MetaData {
   String id;
   String category;
 
-  MetaData({
+  Metadata({
     this.cards,
     required this.imageUrl,
     required this.grade,
@@ -17,12 +17,12 @@ class MetaData {
     required this.category,
   });
 
-  factory MetaData.fromJson(Map<String, dynamic> json) {
+  factory Metadata.fromJson(Map<String, dynamic> json) {
     var cardsJson = json['cards'] as List?;
     List<CardItem>? cardsList =
         cardsJson?.map((card) => CardItem.fromJson(card)).toList();
 
-    return MetaData(
+    return Metadata(
       cards: cardsList,
       imageUrl: json['imageUrl'],
       grade: json['grade'],

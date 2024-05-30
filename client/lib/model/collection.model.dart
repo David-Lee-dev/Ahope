@@ -1,25 +1,25 @@
 import 'package:client/model/metaData.model.dart';
 
 class Collection {
-  List<MetaData> metaDataList;
+  List<Metadata> metadataList;
   String category;
 
-  Collection({required this.metaDataList, required this.category});
+  Collection({required this.metadataList, required this.category});
 
   factory Collection.fromJson(Map<String, dynamic> json) {
-    var metaDataListJson = json['metaDataList'] as List;
-    List<MetaData> metaDataList =
-        metaDataListJson.map((item) => MetaData.fromJson(item)).toList();
+    final metadataListJson = json['metadataList'] as List;
+    List<Metadata> metadataList =
+        metadataListJson.map((item) => Metadata.fromJson(item)).toList();
 
     return Collection(
-      metaDataList: metaDataList,
+      metadataList: metadataList,
       category: json['category'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'metaDataList': metaDataList.map((item) => item.toJson()).toList(),
+      'metadataList': metadataList.map((item) => item.toJson()).toList(),
       'category': category,
     };
   }

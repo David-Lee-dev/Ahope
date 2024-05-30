@@ -1,10 +1,16 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class CollectionProgressBar extends StatefulWidget {
+  final String category;
+  final double rate;
   final VoidCallback onTap;
 
   const CollectionProgressBar({
     super.key,
+    required this.category,
+    required this.rate,
     required this.onTap,
   });
 
@@ -16,6 +22,13 @@ class _CollectionProgressBarState extends State<CollectionProgressBar>
     with TickerProviderStateMixin {
   late AnimationController controller;
 
+  double roundDown(double value, int precision) {
+    final isNegative = value.isNegative;
+    final mod = pow(10.0, precision);
+    final roundDown = (((value.abs() * mod).floor()) / mod);
+    return isNegative ? -roundDown : roundDown;
+  }
+
   @override
   void initState() {
     controller = AnimationController(
@@ -24,7 +37,7 @@ class _CollectionProgressBarState extends State<CollectionProgressBar>
     )..addListener(() {
         setState(() {});
       });
-    controller.animateTo(0.2);
+    controller.animateTo(roundDown(widget.rate, 2));
     super.initState();
   }
 
@@ -38,29 +51,32 @@ class _CollectionProgressBarState extends State<CollectionProgressBar>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap,
-      child: Stack(
-        children: [
-          LinearProgressIndicator(
-            minHeight: 44,
-            backgroundColor: const Color.fromRGBO(61, 74, 93, 0.7),
-            color: const Color.fromARGB(177, 110, 121, 136),
-            value: controller.value,
-            semanticsLabel: 'test progress',
-            borderRadius: BorderRadius.circular(10),
-          ),
-          Container(
-            padding: const EdgeInsets.only(left: 10),
-            child: const Text(
-              'Test category',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                height: 1.8,
-                color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Stack(
+          children: [
+            LinearProgressIndicator(
+              minHeight: 44,
+              backgroundColor: const Color.fromRGBO(61, 74, 93, 0.7),
+              color: const Color.fromARGB(177, 110, 121, 136),
+              value: controller.value,
+              semanticsLabel: 'test progress',
+              borderRadius: BorderRadius.circular(10),
+            ),
+            Container(
+              padding: const EdgeInsets.only(left: 10),
+              child: Text(
+                widget.category,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  height: 1.8,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

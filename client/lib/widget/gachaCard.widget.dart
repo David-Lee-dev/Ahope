@@ -21,9 +21,11 @@ class _GachaCardState extends State<GachaCard> {
   @override
   void initState() {
     Future.delayed(const Duration(seconds: 1)).then((_) {
-      setState(() {
-        _showImage = true;
-      });
+      if (mounted) {
+        setState(() {
+          _showImage = true;
+        });
+      }
     });
     super.initState();
   }
@@ -113,7 +115,7 @@ class _GachaCardState extends State<GachaCard> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: ElevatedButton(
-                onPressed: widget.onClose,
+                onPressed: () => {if (_showImage) widget.onClose()},
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20)),
