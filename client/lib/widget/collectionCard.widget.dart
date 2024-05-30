@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:client/model/metaData.model.dart';
 import 'package:client/util/TopRightClipper.util.dart';
 import 'package:flutter/material.dart';
@@ -17,10 +19,11 @@ class CollcetionCard extends StatefulWidget {
 
 class _CollcetionCardState extends State<CollcetionCard> {
   bool showImage = false;
+  bool imageLoadedOnce = false;
 
   @override
   void initState() {
-    Future.delayed(const Duration(milliseconds: 1000)).then((_) {
+    Future.delayed(const Duration(milliseconds: 0)).then((_) {
       if (mounted) {
         setState(() {
           showImage = true;
@@ -123,24 +126,26 @@ class _CollcetionCardState extends State<CollcetionCard> {
                 color: const Color(0xff364458),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Image.network(
-                widget.data.imageUrl,
-                loadingBuilder: (context, child, loadingProgress) {
-                  bool imageLoaded = false;
-                  if (loadingProgress == null) imageLoaded = true;
-
-                  return showImage && imageLoaded
-                      ? child
-                      : Shimmer.fromColors(
-                          baseColor: const Color(0xff051732),
-                          highlightColor: const Color(0xFF3F3F3F),
-                          period: const Duration(milliseconds: 500),
-                          child: Container(
-                            decoration:
-                                const BoxDecoration(color: Colors.black),
-                            child: const Text(''),
-                          ),
-                        );
+              child: FutureBuilder<void>(
+                future: _loadImage(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done &&
+                      imageLoadedOnce) {
+                    return Image.network(
+                      widget.data.imageUrl,
+                      fit: BoxFit.cover,
+                    );
+                  } else {
+                    return Shimmer.fromColors(
+                      baseColor: const Color(0xff051732),
+                      highlightColor: const Color(0xFF3F3F3F),
+                      period: const Duration(milliseconds: 500),
+                      child: Container(
+                        decoration: const BoxDecoration(color: Colors.black),
+                        child: const Text(''),
+                      ),
+                    );
+                  }
                 },
               ),
             ),
@@ -148,5 +153,29 @@ class _CollcetionCardState extends State<CollcetionCard> {
         ],
       ),
     );
+  }
+
+  Future<void> _loadImage() async {
+    if (!imageLoadedOnce) {
+      final image = NetworkImage(widget.data.imageUrl);
+      final completer = Completer<void>();
+      image.resolve(const ImageConfiguration()).addListener(
+            ImageStreamListener(
+              (info, _) {
+                if (mounted) {
+                  setState(() {
+                    imageLoadedOnce = true;
+                  });
+                }
+                completer.complete();
+              },
+              onError: (error, stackTrace) {
+                completer.completeError(error, stackTrace);
+              },
+            ),
+          );
+      return completer.future;
+    }
+    return Future.value();
   }
 }
