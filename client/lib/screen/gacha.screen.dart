@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:client/enum/errorCode.enum.dart';
@@ -29,12 +30,10 @@ class _GachaScreenState extends State<GachaScreen> {
     final mp = Provider.of<MemberProvider>(context, listen: false);
     final cp = Provider.of<CollectionProvider>(context, listen: false);
 
-    if (cp.collection != null) return;
-
-    RequestManager.requestCollection(mp.id)
-        .then((collection) => cp.setCollection(collection))
-        .catchError(
-      (exception) {
+    if (mp.lastGachaTimestamp == null) {
+      RequestManager.requestMember(mp.id).then((member) {
+        mp.setLastGachaTimestamp(member.lastGachaTimestamp);
+      }).catchError((exception) {
         late Text alertTitle;
         late List<Text> alertContents;
         late List<TextButton> buttons;
@@ -50,12 +49,12 @@ class _GachaScreenState extends State<GachaScreen> {
               TextButton(onPressed: () => exit(0), child: const Text('종료'))
             ];
           } else {
-            alertTitle = const Text('컬렉션을 불러오지 못했습니다.');
-            alertContents = [const Text('컬렉션 탭에서 새로고침 해주세요.')];
+            alertTitle = const Text('유저 정보를 불러오지 못했습니다.');
+            alertContents = [const Text('앱을 재실행 해주세요.')];
             buttons = [
               TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('확인'),
+                onPressed: () => exit(0),
+                child: const Text('종료'),
               ),
             ];
           }
@@ -86,8 +85,68 @@ class _GachaScreenState extends State<GachaScreen> {
             );
           },
         );
-      },
-    );
+      });
+    }
+
+    if (cp.collection == null) {
+      RequestManager.requestCollection(mp.id)
+          .then((collection) => cp.setCollection(collection))
+          .catchError(
+        (exception) {
+          late Text alertTitle;
+          late List<Text> alertContents;
+          late List<TextButton> buttons;
+
+          if (exception is HttpResponseException) {
+            if (exception.code == ErrorCode.serverError) {
+              alertTitle = const Text('심뽑을 종료합니다.');
+              alertContents = [
+                const Text('서버와 통신할 수 없습니다.'),
+                const Text('앱을 종료합니다.')
+              ];
+              buttons = [
+                TextButton(onPressed: () => exit(0), child: const Text('종료'))
+              ];
+            } else {
+              alertTitle = const Text('컬렉션을 불러오지 못했습니다.');
+              alertContents = [const Text('컬렉션 탭에서 새로고침 해주세요.')];
+              buttons = [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('확인'),
+                ),
+              ];
+            }
+          } else {
+            alertTitle = const Text('앱이 종료됩니다.');
+            alertContents = [
+              const Text('알 수 없는 오류가 발생했습니다.'),
+              const Text('빠른 시일 내로 복구하겠습니다. 사용에 불편을 드려 죄송합니다.')
+            ];
+            buttons = [
+              TextButton(onPressed: () => exit(0), child: const Text('종료'))
+            ];
+          }
+
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: alertTitle,
+                    content: SingleChildScrollView(
+                        child: ListBody(children: alertContents)),
+                    actions: buttons,
+                  );
+                },
+              );
+            },
+          );
+        },
+      );
+    }
   }
 
   @override

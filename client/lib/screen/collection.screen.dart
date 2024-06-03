@@ -9,6 +9,7 @@ import 'package:client/widget/card/collectionCard.widget.dart';
 import 'package:client/widget/cardSlider.widget.dart';
 import 'package:client/widget/collectionProgressBar.widget.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
 
 class CollectionScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class CollectionScreen extends StatefulWidget {
 
 class _CollectionScreenState extends State<CollectionScreen> {
   Collection? _selectedCollection;
+  bool _isRefreshing = false;
 
   void _selectCollection(Collection collection) {
     setState(() {
@@ -47,7 +49,9 @@ class _CollectionScreenState extends State<CollectionScreen> {
     final mp = Provider.of<MemberProvider>(context, listen: false);
     final cp = Provider.of<CollectionProvider>(context, listen: false);
 
-    if (cp.collection != null) return;
+    setState(() {
+      _isRefreshing = true;
+    });
 
     RequestManager.requestCollection(mp.id)
         .then((collection) => cp.setCollection(collection))
@@ -108,7 +112,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
           },
         );
       },
-    );
+    ).whenComplete(() {
+      setState(() {
+        _isRefreshing = false;
+      });
+    });
   }
 
   @override
@@ -123,16 +131,19 @@ class _CollectionScreenState extends State<CollectionScreen> {
               children: [
                 const SizedBox(height: 40),
                 Stack(children: [
-                  const Center(
-                    heightFactor: 1.25,
-                    child: Text(
-                      'Collection',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 28,
-                      ),
-                    ),
+                  Center(
+                    heightFactor: _isRefreshing ? 0.55 : 1.25,
+                    child: _isRefreshing
+                        ? LoadingAnimationWidget.waveDots(
+                            color: Colors.white70, size: 80)
+                        : const Text(
+                            'Collection',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 28,
+                            ),
+                          ),
                   ),
                   Positioned(
                     right: 0,

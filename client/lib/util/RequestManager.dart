@@ -75,6 +75,25 @@ class RequestManager {
     }
   }
 
+  static Future<Member> requestMember(String? id) async {
+    if (id == null) {
+      throw Error();
+    }
+
+    Res response = await http.get(
+      _getUrl('/api/member/$id'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return Member.fromJson(jsonDecode(response.body));
+    } else {
+      throw HttpResponseException(RequestMethod.post, response.statusCode);
+    }
+  }
+
   static Uri _getUrl(String path, [Map<String, String>? queryParams]) {
     Uri uri = Uri.parse(_baseUrl).resolve(path);
 
