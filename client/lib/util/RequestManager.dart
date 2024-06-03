@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:client/enum/requestMethod.enum.dart';
 import 'package:client/model/member.model.dart';
 import 'package:client/model/collection.model.dart';
+import 'package:client/util/HttpResponseException.util.dart';
 import 'package:http/http.dart' as http;
 
 typedef Res = http.Response;
@@ -24,7 +26,7 @@ class RequestManager {
     if (response.statusCode == 201) {
       return Member.fromJson(jsonDecode(response.body));
     } else {
-      throw Error();
+      throw HttpResponseException(RequestMethod.post, response.statusCode);
     }
   }
 
@@ -45,7 +47,7 @@ class RequestManager {
           .map((data) => Collection.fromJson(data))
           .toList();
     } else {
-      throw Error();
+      throw HttpResponseException(RequestMethod.get, response.statusCode);
     }
   }
 
@@ -69,7 +71,7 @@ class RequestManager {
         'imageUrl': data['metadata']['imageUrl'],
       };
     } else {
-      throw Error();
+      throw HttpResponseException(RequestMethod.post, response.statusCode);
     }
   }
 

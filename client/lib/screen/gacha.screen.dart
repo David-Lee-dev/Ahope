@@ -1,5 +1,10 @@
+import 'dart:io';
+
+import 'package:client/enum/errorCode.enum.dart';
+import 'package:client/enum/requestMethod.enum.dart';
 import 'package:client/provider/collection.provider.dart';
 import 'package:client/provider/member.provider.dart';
+import 'package:client/util/HttpResponseException.util.dart';
 import 'package:client/util/RequestManager.dart';
 import 'package:client/widget/card/gachaCard.widget.dart';
 import 'package:client/widget/gredientButton.widget.dart';
@@ -15,47 +20,102 @@ class GachaScreen extends StatefulWidget {
 }
 
 class _GachaScreenState extends State<GachaScreen> {
-  final bool _canDismiss = true;
   bool _isDrawing = false;
 
   @override
   void initState() {
-    final mp = Provider.of<MemberProvider>(context, listen: false);
-    final cp = Provider.of<CollectionProvider>(context, listen: false);
-
-    RequestManager.requestCollection(mp.id).then((collection) {
-      cp.setCollection(collection);
-    });
-
     super.initState();
-  }
 
-  Future<dynamic> _drawCard() async {
     final mp = Provider.of<MemberProvider>(context, listen: false);
     final cp = Provider.of<CollectionProvider>(context, listen: false);
 
-    final card = await RequestManager.requestDraw(mp.id);
-    final collection = await RequestManager.requestCollection(mp.id);
+    if (cp.collection != null) return;
 
-    cp.setCollection(collection);
+    RequestManager.requestCollection(mp.id)
+        .then((collection) => cp.setCollection(collection))
+        .catchError(
+      (exception) {
+        late Text alertTitle;
+        late List<Text> alertContents;
+        late List<TextButton> buttons;
 
-    return card;
-  }
+        if (exception is HttpResponseException) {
+          if (exception.code == ErrorCode.serverError) {
+            alertTitle = const Text('심뽑을 종료합니다.');
+            alertContents = [
+              const Text('서버와 통신할 수 없습니다.'),
+              const Text('앱을 종료합니다.')
+            ];
+            buttons = [
+              TextButton(onPressed: () => exit(0), child: const Text('종료'))
+            ];
+          } else {
+            alertTitle = const Text('컬렉션을 불러오지 못했습니다.');
+            alertContents = [const Text('컬렉션 탭에서 새로고침 해주세요.')];
+            buttons = [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('확인'),
+              ),
+            ];
+          }
+        } else {
+          alertTitle = const Text('앱이 종료됩니다.');
+          alertContents = [
+            const Text('알 수 없는 오류가 발생했습니다.'),
+            const Text('빠른 시일 내로 복구하겠습니다. 사용에 불편을 드려 죄송합니다.')
+          ];
+          buttons = [
+            TextButton(onPressed: () => exit(0), child: const Text('종료'))
+          ];
+        }
 
-  void _turnOnDrawing() {
-    setState(() {
-      _isDrawing = true;
-    });
-  }
-
-  void _turnOffDrawing() {
-    setState(() {
-      _isDrawing = false;
-    });
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: alertTitle,
+                  content: SingleChildScrollView(
+                      child: ListBody(children: alertContents)),
+                  actions: buttons,
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    Future<dynamic> drawCard() async {
+      final mp = Provider.of<MemberProvider>(context, listen: false);
+      final cp = Provider.of<CollectionProvider>(context, listen: false);
+
+      final card = await RequestManager.requestDraw(mp.id);
+      final collection = await RequestManager.requestCollection(mp.id);
+
+      cp.setCollection(collection);
+
+      return card;
+    }
+
+    void turnOnDrawing() {
+      setState(() {
+        _isDrawing = true;
+      });
+    }
+
+    void turnOffDrawing() {
+      setState(() {
+        _isDrawing = false;
+      });
+    }
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -66,28 +126,82 @@ class _GachaScreenState extends State<GachaScreen> {
           startColor: const Color(0xff5c5ae4),
           endColor: const Color(0xffDE4981),
           onPressed: () {
-            _turnOnDrawing();
-            _drawCard()
-                .then(
-                  (card) {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: _canDismiss,
-                      builder: (BuildContext context) => Dialog(
-                        backgroundColor: Colors.transparent,
-                        child: GachaCard(
-                          onClose: () {},
-                          imageUrl: card['imageUrl'],
-                          seq: card['seq'],
-                        ),
-                      ),
-                    );
-                  },
-                )
-                .catchError((onError) {})
-                .whenComplete(() {
-                  _turnOffDrawing();
-                });
+            turnOnDrawing();
+            drawCard().then(
+              (card) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) => Dialog(
+                    backgroundColor: Colors.transparent,
+                    child: GachaCard(
+                      imageUrl: card['imageUrl'],
+                      seq: card['seq'],
+                    ),
+                  ),
+                );
+              },
+            ).catchError((exception) {
+              late Text alertTitle;
+              late List<Text> alertContents;
+              late List<TextButton> buttons;
+
+              if (exception is HttpResponseException) {
+                if (exception.method == RequestMethod.post) {
+                  if (exception.code == ErrorCode.serverError) {
+                    alertTitle = const Text('카드 뽑기에 실패했습니다.');
+                    alertContents = [const Text('서버와 통신할 수 없습니다.')];
+                    buttons = [
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('확인'))
+                    ];
+                  } else {
+                    alertTitle = const Text('카드 뽑기에 실패했습니다.');
+                    alertContents = [const Text('다시 시도해주세요.')];
+                    buttons = [
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('확인'))
+                    ];
+                  }
+                }
+
+                if (exception.method == RequestMethod.get) {
+                  alertTitle = const Text('컬렉션 최신화에 실패했습니다.');
+                  alertContents = [const Text('컬렉션 탭에서 새로고침 해주세요.')];
+                  buttons = [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('확인'))
+                  ];
+                }
+              } else {
+                alertTitle = const Text('카드 뽑기에 실패했습니다.');
+                alertContents = [
+                  const Text('알 수 없는 오류가 발생했습니다.'),
+                  const Text('빠른 시일 내로 복구하겠습니다. 사용에 불편을 드려 죄송합니다.')
+                ];
+                buttons = [
+                  TextButton(onPressed: () => exit(0), child: const Text('종료'))
+                ];
+              }
+
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: alertTitle,
+                    content: SingleChildScrollView(
+                        child: ListBody(children: alertContents)),
+                    actions: buttons,
+                  );
+                },
+              );
+            }).whenComplete(() {
+              turnOffDrawing();
+            });
           },
           child: _isDrawing
               ? LoadingAnimationWidget.waveDots(color: Colors.white70, size: 80)

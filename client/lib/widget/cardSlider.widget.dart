@@ -18,7 +18,6 @@ class CardSlider extends StatefulWidget {
 }
 
 class _CardSliderState extends State<CardSlider> {
-  int _current = 0;
   final CarouselController _controller = CarouselController();
 
   @override
@@ -41,11 +40,6 @@ class _CardSliderState extends State<CardSlider> {
                 enlargeCenterPage: true,
                 aspectRatio: 1.0,
                 enableInfiniteScroll: false,
-                onPageChanged: (index, reason) {
-                  setState(() {
-                    _current = index;
-                  });
-                },
               ),
             ),
           ),

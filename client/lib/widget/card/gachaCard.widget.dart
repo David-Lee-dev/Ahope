@@ -6,11 +6,9 @@ import 'package:random_text_reveal/random_text_reveal.dart';
 class GachaCard extends StatefulWidget {
   final String imageUrl;
   final int seq;
-  final VoidCallback onClose;
 
   const GachaCard({
     super.key,
-    required this.onClose,
     required this.imageUrl,
     required this.seq,
   });
@@ -25,7 +23,7 @@ class _GachaCardState extends State<GachaCard> {
     return CardFrame(
       title: _buildTitle(),
       content: _buildContent(),
-      button: _buildButton(),
+      button: _buildButton(context),
       paddingTop: 60,
       clipScale: 80,
       borderRadius: 20,
@@ -38,7 +36,7 @@ class _GachaCardState extends State<GachaCard> {
       duration: const Duration(seconds: 1),
       style: const TextStyle(
         fontSize: 24,
-        color: Colors.white70,
+        color: Colors.white,
         fontWeight: FontWeight.bold,
       ),
       curve: Curves.easeIn,
@@ -54,25 +52,27 @@ class _GachaCardState extends State<GachaCard> {
     );
   }
 
-  Widget _buildButton() {
-    return Container(
-      width: 55,
-      height: 55,
-      decoration: BoxDecoration(
-        color: const Color(0xff364458),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: ElevatedButton(
-        onPressed: widget.onClose,
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: EdgeInsets.zero,
+  Widget _buildButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pop(context),
+      child: Container(
+        width: 55,
+        height: 55,
+        decoration: BoxDecoration(
+          color: const Color(0xff364458),
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: const Icon(Icons.close),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.transparent,
+          ),
+          child: const Icon(
+            Icons.close,
+            color: Colors.white,
+            size: 32,
+          ),
+        ),
       ),
     );
   }

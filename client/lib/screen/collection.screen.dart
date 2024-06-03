@@ -49,15 +49,16 @@ class _CollectionScreenState extends State<CollectionScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 70),
-                for (final data in cp.collection)
-                  CollectionProgressBar(
-                    category: data.category.split('_')[1],
-                    rate: _getCollectingRate(data),
-                    onTap: () {
-                      _selectCollection(data);
-                      showDrawer(context);
-                    },
-                  ),
+                if (cp.collection != null)
+                  for (final data in cp.collection!)
+                    CollectionProgressBar(
+                      category: data.category.split('_')[1],
+                      rate: _getCollectingRate(data),
+                      onTap: () {
+                        _selectCollection(data);
+                        showDrawer(context);
+                      },
+                    ),
               ],
             ),
           ),
