@@ -21,6 +21,9 @@ export class MemberService {
 
       if (foundMember) return foundMember;
 
+      member.remainTicket = 5;
+      member.lastGachaTimestamp = Date.now();
+
       return await this.memberRepository.save(member);
     } catch (error) {
       throw new ServiceException(error, 'cannot save member');

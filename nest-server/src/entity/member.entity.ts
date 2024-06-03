@@ -16,8 +16,11 @@ export class MemberEntity {
   remainTicket: number = 0;
 
   draw() {
-    this.lastGachaTimestamp = new Date().getTime();
-    this.remainTicket = Math.max(0, this.remainTicket - 1);
+    const timestamp = new Date().getTime();
+    const ticket = (timestamp - this.lastGachaTimestamp) / (30 * 60 * 1000);
+
+    this.remainTicket = Math.max(0, this.remainTicket + ticket - 1);
+    this.lastGachaTimestamp = timestamp;
   }
 
   static create(id: UUID | null, email: string, lastGachaTimestamp: number | null = null, remainTicket: number = 0) {
