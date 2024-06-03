@@ -1,7 +1,7 @@
 import 'package:client/provider/collection.provider.dart';
 import 'package:client/provider/member.provider.dart';
 import 'package:client/util/RequestManager.dart';
-import 'package:client/widget/gachaCard.widget.dart';
+import 'package:client/widget/card/gachaCard.widget.dart';
 import 'package:client/widget/gredientButton.widget.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';

@@ -1,7 +1,6 @@
-import 'package:carousel_slider/carousel_controller.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:client/model/cardItem.model.dart';
-import 'package:client/widget/gachaCard.widget.dart';
+import 'package:client/widget/card/sliderCard.widget.dart';
 import 'package:flutter/material.dart';
 
 class CardSlider extends StatefulWidget {
@@ -24,32 +23,34 @@ class _CardSliderState extends State<CardSlider> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: CarouselSlider(
-            items: [
-              for (final card in widget.cards)
-                GachaCard(
-                  onClose: () {},
-                  imageUrl: widget.imageUrl,
-                  seq: card.seq,
-                )
-            ],
-            carouselController: _controller,
-            options: CarouselOptions(
-              enlargeCenterPage: true,
-              aspectRatio: 1.0,
-              enableInfiniteScroll: false,
-              onPageChanged: (index, reason) {
-                setState(() {
-                  _current = index;
-                });
-              },
+    return SizedBox(
+      child: Column(
+        children: [
+          Expanded(
+            child: CarouselSlider(
+              items: [
+                for (final card in widget.cards)
+                  SliderCard(
+                    onClose: () {},
+                    imageUrl: widget.imageUrl,
+                    seq: card.seq,
+                  )
+              ],
+              carouselController: _controller,
+              options: CarouselOptions(
+                enlargeCenterPage: true,
+                aspectRatio: 1.0,
+                enableInfiniteScroll: false,
+                onPageChanged: (index, reason) {
+                  setState(() {
+                    _current = index;
+                  });
+                },
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

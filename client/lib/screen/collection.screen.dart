@@ -1,8 +1,8 @@
 import 'package:client/model/collection.model.dart';
 import 'package:client/provider/collection.provider.dart';
 import 'package:client/util/TopRightClipper.util.dart';
+import 'package:client/widget/card/collectionCard.widget.dart';
 import 'package:client/widget/cardSlider.widget.dart';
-import 'package:client/widget/collectionCard.widget.dart';
 import 'package:client/widget/collectionProgressBar.widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -120,6 +120,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                                     showDialog(
                                       context: context,
                                       builder: (BuildContext context) => Dialog(
+                                        insetPadding: EdgeInsets.zero,
                                         backgroundColor: Colors.transparent,
                                         child: CardSlider(
                                           cards: data.cards!,
