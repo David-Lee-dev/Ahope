@@ -76,13 +76,9 @@ class _GachaScreenState extends State<GachaScreen> {
                       builder: (BuildContext context) => Dialog(
                         backgroundColor: Colors.transparent,
                         child: GachaCard(
+                          onClose: () {},
                           imageUrl: card['imageUrl'],
                           seq: card['seq'],
-                          onClose: () {
-                            if (!_isDrawing) {
-                              Navigator.pop(context);
-                            }
-                          },
                         ),
                       ),
                     );
