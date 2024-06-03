@@ -5,11 +5,9 @@ import 'package:flutter/material.dart';
 class SliderCard extends StatefulWidget {
   final String imageUrl;
   final int seq;
-  final VoidCallback onClose;
 
   const SliderCard({
     super.key,
-    required this.onClose,
     required this.imageUrl,
     required this.seq,
   });
@@ -24,7 +22,7 @@ class _SliderCardState extends State<SliderCard> {
     return CardFrame(
       title: _buildTitle(),
       content: _buildContent(),
-      button: _buildButton(),
+      button: _buildButton(context),
       paddingTop: 60,
       clipScale: 80,
       borderRadius: 20,
@@ -51,25 +49,27 @@ class _SliderCardState extends State<SliderCard> {
     );
   }
 
-  Widget _buildButton() {
-    return Container(
-      width: 55,
-      height: 55,
-      decoration: BoxDecoration(
-        color: const Color(0xff364458),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: ElevatedButton(
-        onPressed: widget.onClose,
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: EdgeInsets.zero,
+  Widget _buildButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pop(context),
+      child: Container(
+        width: 55,
+        height: 55,
+        decoration: BoxDecoration(
+          color: const Color(0xff364458),
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: const Icon(Icons.close),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.transparent,
+          ),
+          child: const Icon(
+            Icons.close,
+            color: Colors.white,
+            size: 32,
+          ),
+        ),
       ),
     );
   }

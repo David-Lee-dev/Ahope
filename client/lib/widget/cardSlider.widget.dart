@@ -30,7 +30,6 @@ class _CardSliderState extends State<CardSlider> {
               items: [
                 for (final card in widget.cards)
                   SliderCard(
-                    onClose: () {},
                     imageUrl: widget.imageUrl,
                     seq: card.seq,
                   )
