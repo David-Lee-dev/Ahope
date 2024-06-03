@@ -88,6 +88,10 @@ export class CardService {
     return sortedCategoryList;
   }
 
+  async deleteCard(cardId: UUID): Promise<void> {
+    await this.cardRepository.delete(cardId);
+  }
+
   private async findCardsByMember(memberId: UUID): Promise<Card[]> {
     const query = `
     SELECT 
