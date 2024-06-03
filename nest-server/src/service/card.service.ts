@@ -150,8 +150,9 @@ export class CardService {
       if (randomNumber > metadata.weight) {
         return metadata.id as UUID;
       }
-      return metadataList[0].id as UUID;
     }
+
+    return metadataList[0].id as UUID;
   }
 
   private async initializeCategorizedCardMap(): Promise<Map<Category, Map<MetadataID, MetadataAttributes>>> {
