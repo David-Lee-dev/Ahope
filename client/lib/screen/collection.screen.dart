@@ -1,6 +1,7 @@
 import 'package:client/model/collection.model.dart';
 import 'package:client/provider/collection.provider.dart';
 import 'package:client/util/TopRightClipper.util.dart';
+import 'package:client/widget/cardSlider.widget.dart';
 import 'package:client/widget/collectionCard.widget.dart';
 import 'package:client/widget/collectionProgressBar.widget.dart';
 import 'package:flutter/material.dart';
@@ -107,15 +108,29 @@ class _CollectionScreenState extends State<CollectionScreen> {
                           horizontal: 10,
                         ),
                         child: GridView.count(
-                            crossAxisCount: 3,
-                            mainAxisSpacing: 5,
-                            crossAxisSpacing: 10,
-                            childAspectRatio: 0.78,
-                            children: [
-                              for (final data
-                                  in _selectedCollection!.metadataList)
-                                CollcetionCard(data: data),
-                            ]),
+                          crossAxisCount: 3,
+                          mainAxisSpacing: 5,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 0.78,
+                          children: [
+                            for (final data
+                                in _selectedCollection!.metadataList)
+                              GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) => Dialog(
+                                        backgroundColor: Colors.transparent,
+                                        child: CardSlider(
+                                          cards: data.cards!,
+                                          imageUrl: data.imageUrl,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: CollcetionCard(data: data)),
+                          ],
+                        ),
                       ),
                     ),
                   ],
