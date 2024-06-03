@@ -4,11 +4,15 @@ import 'package:random_text_reveal/random_text_reveal.dart';
 import 'package:shimmer/shimmer.dart';
 
 class GachaCard extends StatefulWidget {
+  final String imageUrl;
+  final int seq;
   final VoidCallback onClose;
 
   const GachaCard({
     super.key,
     required this.onClose,
+    required this.imageUrl,
+    required this.seq,
   });
 
   @override
@@ -16,20 +20,6 @@ class GachaCard extends StatefulWidget {
 }
 
 class _GachaCardState extends State<GachaCard> {
-  bool _showImage = false;
-
-  @override
-  void initState() {
-    Future.delayed(const Duration(seconds: 1)).then((_) {
-      if (mounted) {
-        setState(() {
-          _showImage = true;
-        });
-      }
-    });
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -49,17 +39,17 @@ class _GachaCardState extends State<GachaCard> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(
+                SizedBox(
                   height: 60,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       RandomTextReveal(
-                        text: 'No. 000000',
-                        duration: Duration(seconds: 1),
-                        style: TextStyle(
+                        text: 'No. ${widget.seq}',
+                        duration: const Duration(seconds: 1),
+                        style: const TextStyle(
                           fontSize: 24,
                           color: Colors.white70,
                           fontWeight: FontWeight.bold,
@@ -79,23 +69,20 @@ class _GachaCardState extends State<GachaCard> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Image.network(
-                      'https://st.depositphotos.com/2274151/3518/i/450/depositphotos_35186549-stock-photo-sample-grunge-red-round-stamp.jpg',
+                      widget.imageUrl,
                       loadingBuilder: (context, child, loadingProgress) {
-                        bool imageLoaded = false;
-                        if (loadingProgress == null) imageLoaded = true;
+                        if (loadingProgress == null) return child;
 
-                        return _showImage && imageLoaded
-                            ? child
-                            : Shimmer.fromColors(
-                                baseColor: const Color(0xff5c5ae4),
-                                highlightColor: const Color(0xffDE4981),
-                                period: const Duration(milliseconds: 500),
-                                child: Container(
-                                  decoration:
-                                      const BoxDecoration(color: Colors.black),
-                                  child: const Text(''),
-                                ),
-                              );
+                        return Shimmer.fromColors(
+                          baseColor: const Color(0xff5c5ae4),
+                          highlightColor: const Color(0xffDE4981),
+                          period: const Duration(milliseconds: 500),
+                          child: Container(
+                            decoration:
+                                const BoxDecoration(color: Colors.black),
+                            child: const Text(''),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -115,10 +102,11 @@ class _GachaCardState extends State<GachaCard> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: ElevatedButton(
-                onPressed: () => {if (_showImage) widget.onClose()},
+                onPressed: widget.onClose,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   backgroundColor: Colors.transparent,
                   shadowColor: Colors.transparent,
                   padding: EdgeInsets.zero,

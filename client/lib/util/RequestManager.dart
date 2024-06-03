@@ -21,7 +21,11 @@ class RequestManager {
       ),
     );
 
-    return Member.fromJson(jsonDecode(response.body));
+    if (response.statusCode == 201) {
+      return Member.fromJson(jsonDecode(response.body));
+    } else {
+      throw Error();
+    }
   }
 
   static Future<List<Collection>> requestCollection(String? id) async {
@@ -36,9 +40,37 @@ class RequestManager {
       },
     );
 
-    return (jsonDecode(response.body) as List)
-        .map((data) => Collection.fromJson(data))
-        .toList();
+    if (response.statusCode == 200) {
+      return (jsonDecode(response.body) as List)
+          .map((data) => Collection.fromJson(data))
+          .toList();
+    } else {
+      throw Error();
+    }
+  }
+
+  static Future<dynamic> requestDraw(String? id) async {
+    if (id == null) {
+      throw Error();
+    }
+
+    final Res response = await http.post(
+      _getUrl('/api/member/$id/card'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+
+      return {
+        'seq': data['seq'],
+        'imageUrl': data['metadata']['imageUrl'],
+      };
+    } else {
+      throw Error();
+    }
   }
 
   static Uri _getUrl(String path, [Map<String, String>? queryParams]) {

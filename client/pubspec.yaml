@@ -42,6 +42,8 @@ dependencies:
   flutter_dotenv: ^5.1.0
   shimmer: ^3.0.0
   random_text_reveal: ^0.0.7
+  loading_animation_widget: ^1.2.1
+  carousel_slider: ^4.2.1
 
 dev_dependencies:
   flutter_test:

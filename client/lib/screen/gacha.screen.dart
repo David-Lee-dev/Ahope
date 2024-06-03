@@ -4,6 +4,7 @@ import 'package:client/util/RequestManager.dart';
 import 'package:client/widget/gachaCard.widget.dart';
 import 'package:client/widget/gredientButton.widget.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
 
 class GachaScreen extends StatefulWidget {
@@ -14,6 +15,9 @@ class GachaScreen extends StatefulWidget {
 }
 
 class _GachaScreenState extends State<GachaScreen> {
+  final bool _canDismiss = true;
+  bool _isDrawing = false;
+
   @override
   void initState() {
     final mp = Provider.of<MemberProvider>(context, listen: false);
@@ -24,6 +28,30 @@ class _GachaScreenState extends State<GachaScreen> {
     });
 
     super.initState();
+  }
+
+  Future<dynamic> _drawCard() async {
+    final mp = Provider.of<MemberProvider>(context, listen: false);
+    final cp = Provider.of<CollectionProvider>(context, listen: false);
+
+    final card = await RequestManager.requestDraw(mp.id);
+    final collection = await RequestManager.requestCollection(mp.id);
+
+    cp.setCollection(collection);
+
+    return card;
+  }
+
+  void _turnOnDrawing() {
+    setState(() {
+      _isDrawing = true;
+    });
+  }
+
+  void _turnOffDrawing() {
+    setState(() {
+      _isDrawing = false;
+    });
   }
 
   @override
@@ -37,24 +65,43 @@ class _GachaScreenState extends State<GachaScreen> {
           height: 70,
           startColor: const Color(0xff5c5ae4),
           endColor: const Color(0xffDE4981),
-          onPressed: () => showDialog(
-            context: context,
-            builder: (BuildContext context) => Dialog(
-              backgroundColor: Colors.transparent,
-              child: GachaCard(
-                onClose: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-          ),
-          child: const Text(
-            'Gacha',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 32,
-            ),
-          ),
+          onPressed: () {
+            _turnOnDrawing();
+            _drawCard()
+                .then(
+                  (card) {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: _canDismiss,
+                      builder: (BuildContext context) => Dialog(
+                        backgroundColor: Colors.transparent,
+                        child: GachaCard(
+                          imageUrl: card['imageUrl'],
+                          seq: card['seq'],
+                          onClose: () {
+                            if (!_isDrawing) {
+                              Navigator.pop(context);
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                )
+                .catchError((onError) {})
+                .whenComplete(() {
+                  _turnOffDrawing();
+                });
+          },
+          child: _isDrawing
+              ? LoadingAnimationWidget.waveDots(color: Colors.white70, size: 80)
+              : const Text(
+                  'Gacha',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
+                  ),
+                ),
         ),
       ],
     );

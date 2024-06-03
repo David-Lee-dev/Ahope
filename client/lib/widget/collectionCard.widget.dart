@@ -83,20 +83,23 @@ class _CollcetionCardState extends State<CollcetionCard> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              if (widget.data.cards!.length > 1)
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade300,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.black54,
-                    size: 20,
-                  ),
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: widget.data.cards!.length > 1
+                      ? Colors.amber.shade300
+                      : const Color.fromRGBO(255, 213, 79, 0),
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                child: Icon(
+                  Icons.add,
+                  color: widget.data.cards!.length > 1
+                      ? Colors.black54
+                      : const Color.fromRGBO(0, 0, 1, 0),
+                  size: 20,
+                ),
+              ),
             ],
           ),
       ],
