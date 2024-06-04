@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, ParseUUIDPipe, Patch, Post, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { CreateMemberDto } from 'src/dto';
 import { MemberService } from 'src/service';
 import { UUID } from 'crypto';
@@ -15,5 +15,10 @@ export class MemberController {
   @Get(':id')
   async getMember(@Param('id', new ParseUUIDPipe()) id: UUID) {
     return await this.memberService.findMemberById(id);
+  }
+
+  @Delete(':id')
+  async removeMember(@Param('id', new ParseUUIDPipe()) id: UUID) {
+    return await this.memberService.deleteMember(id);
   }
 }

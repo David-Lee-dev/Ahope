@@ -58,6 +58,15 @@ class DiskStorageManager {
     return prefs.getInt('remainTicket');
   }
 
+  static Future<void> removeMemberData() async {
+    final prefs = await _getPrefs();
+
+    await prefs.remove('id');
+    await prefs.remove('email');
+    await prefs.remove('lastGachaTimestamp');
+    await prefs.remove('remainTicket');
+  }
+
   static Future<SharedPreferences> _getPrefs() async {
     return await SharedPreferences.getInstance();
   }

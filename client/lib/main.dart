@@ -36,6 +36,8 @@ class _AppState extends State<App> {
 
   @override
   void initState() {
+    super.initState();
+
     DiskStorageManager.getMember().then((member) {
       setState(() {
         if (member != null) {
@@ -43,7 +45,6 @@ class _AppState extends State<App> {
         }
       });
     });
-    super.initState();
   }
 
   @override
@@ -55,7 +56,6 @@ class _AppState extends State<App> {
   static final List<Widget> _pages = <Widget>[
     const GachaScreen(),
     const CollectionScreen(),
-    // const CollectionScreen(),
     const SettingsScreen()
   ];
 
@@ -105,10 +105,6 @@ class _AppState extends State<App> {
                         icon: Icon(Icons.collections, color: Colors.white),
                         label: "Collections",
                       ),
-                      // BottomNavItem(
-                      //   icon: Icon(Icons.price_change, color: Colors.white),
-                      //   label: "Market",
-                      // ),
                       BottomNavItem(
                         icon: Icon(Icons.settings, color: Colors.white),
                         label: "Setting",

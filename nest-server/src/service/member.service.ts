@@ -17,14 +17,22 @@ export class MemberService {
 
   async saveMember(member: MemberEntity): Promise<MemberEntity> {
     try {
-      const foundMember = await this.memberRepository.findOne({ where: { email: member.email } });
+      const foundMember = await this.memberRepository.findOne({ where: { email: member.email }, withDeleted: true });
 
-      if (foundMember) return foundMember;
+      if (foundMember) {
+        await this.memberRepository.restore({ id: foundMember.id });
 
-      member.remainTicket = 5;
-      member.lastGachaTimestamp = Date.now();
+        foundMember.remainTicket = 5;
+        foundMember.lastGachaTimestamp = Date.now();
+        foundMember.deletedAt = null;
 
-      return await this.memberRepository.save(member);
+        return await this.memberRepository.save(foundMember);
+      } else {
+        member.remainTicket = 5;
+        member.lastGachaTimestamp = Date.now();
+
+        return await this.memberRepository.save(member);
+      }
     } catch (error) {
       throw new ServiceException(error, 'cannot save member');
     }
@@ -35,6 +43,14 @@ export class MemberService {
       return await this.memberRepository.findOne({ where: { id } });
     } catch (error) {
       throw new ServiceException(error, 'cannot save member');
+    }
+  }
+
+  async deleteMember(id: UUID): Promise<void> {
+    try {
+      await this.memberRepository.softDelete({ id });
+    } catch (error) {
+      throw new ServiceException(error, 'cannot delete member');
     }
   }
 }

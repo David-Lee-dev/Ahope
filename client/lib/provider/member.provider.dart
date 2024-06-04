@@ -44,4 +44,13 @@ class MemberProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  void reset() {
+    _memberId = null;
+    _email = null;
+    _lastGachaTimestamp = null;
+    _remainTicket = null;
+
+    notifyListeners();
+  }
 }

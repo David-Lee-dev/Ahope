@@ -94,6 +94,23 @@ class RequestManager {
     }
   }
 
+  static Future<void> requestQuit(String? id) async {
+    if (id == null) {
+      throw Error();
+    }
+
+    Res response = await http.delete(
+      _getUrl('/api/member/$id'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw HttpResponseException(RequestMethod.post, response.statusCode);
+    }
+  }
+
   static Uri _getUrl(String path, [Map<String, String>? queryParams]) {
     Uri uri = Uri.parse(_baseUrl).resolve(path);
 

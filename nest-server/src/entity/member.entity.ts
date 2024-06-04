@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, DeleteDateColumn } from 'typeorm';
 import { UUID } from 'crypto';
 
 @Entity({ name: 'member' })
@@ -14,6 +14,9 @@ export class MemberEntity {
 
   @Column({ name: 'remain_ticket', default: 0 })
   remainTicket: number = 0;
+
+  @DeleteDateColumn({ name: 'deleted_at', default: null })
+  deletedAt: Date | null = null;
 
   draw() {
     const timestamp = new Date().getTime();
