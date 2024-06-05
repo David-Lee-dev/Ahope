@@ -26,7 +26,10 @@ class DiskStorageManager {
     final int? lastGachaTimestamp = await getLastGachaTimestamp();
     final int? remainTicket = await getRemainTicket();
 
-    if (id != null && email != null && remainTicket != null) {
+    if (id != null &&
+        email != null &&
+        lastGachaTimestamp != null &&
+        remainTicket != null) {
       return Member(
         id: id,
         email: email,
@@ -56,6 +59,13 @@ class DiskStorageManager {
   static Future<int?> getRemainTicket() async {
     final prefs = await _getPrefs();
     return prefs.getInt('remainTicket');
+  }
+
+  static Future<void> setMemberData(Member member) async {
+    await setData('id', member.id);
+    await setData('email', member.email);
+    await setData('lastGachaTimestamp', member.lastGachaTimestamp);
+    await setData('remainTicket', member.remainTicket);
   }
 
   static Future<void> removeMemberData() async {

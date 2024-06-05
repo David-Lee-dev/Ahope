@@ -15,9 +15,9 @@ class Member {
     return Member(
       id: json['id'] as String,
       email: json['email'] as String,
-      lastGachaTimestamp: json['lastGachaTimestamp'] == 'Null'
+      lastGachaTimestamp: json['lastGachaTimestamp'] is String
           ? int.parse(json['lastGachaTimestamp'])
-          : null,
+          : json['lastGachaTimestamp'],
       remainTicket: json['remainTicket'] as int,
     );
   }

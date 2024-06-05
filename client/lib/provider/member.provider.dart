@@ -14,9 +14,9 @@ class MemberProvider extends ChangeNotifier {
 
   void setAll(Member member) {
     _memberId = member.id;
-    _email = id;
-    _lastGachaTimestamp = lastGachaTimestamp;
-    _remainTicket = remainTicket;
+    _email = member.email;
+    _lastGachaTimestamp = member.lastGachaTimestamp;
+    _remainTicket = member.remainTicket;
 
     notifyListeners();
   }
@@ -28,7 +28,7 @@ class MemberProvider extends ChangeNotifier {
   }
 
   void setEmail(String email) {
-    _email = id;
+    _email = email;
 
     notifyListeners();
   }
@@ -39,7 +39,7 @@ class MemberProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setRemainTicket(int id) {
+  void setRemainTicket(int remainTicket) {
     _remainTicket = remainTicket;
 
     notifyListeners();

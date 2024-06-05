@@ -10,7 +10,7 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -20,16 +20,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() {
     if (_formKey.currentState?.validate() ?? false) {
       RequestManager.requestJoin(_emailController.text).then(
-        (data) {
-          DiskStorageManager.setData('id', data.id);
-          DiskStorageManager.setData('email', data.email);
-          DiskStorageManager.setData(
-              'lastGachaTimestamp', data.lastGachaTimestamp);
-          DiskStorageManager.setData('remainTicket', data.remainTicket);
-
-          setState(() {
-            Provider.of<MemberProvider>(context, listen: false).setAll(data);
-          });
+        (member) {
+          DiskStorageManager.setMemberData(member);
+          Provider.of<MemberProvider>(context, listen: false).setAll(member);
         },
       ).catchError((error) {
         throw error;
