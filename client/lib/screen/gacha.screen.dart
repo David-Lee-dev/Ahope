@@ -9,7 +9,6 @@ import 'package:client/util/HttpResponseException.util.dart';
 import 'package:client/util/RequestManager.dart';
 import 'package:client/widget/card/gachaCard.widget.dart';
 import 'package:client/widget/gredientButton.widget.dart';
-import 'package:client/widget/ticketTimer.widget.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +22,9 @@ class GachaScreen extends StatefulWidget {
 
 class _GachaScreenState extends State<GachaScreen> {
   bool _isDrawing = false;
+  int _remainTimeToGetTicket = 0;
+  int _remainTicket = 30 * 60 * 1000;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -30,6 +32,51 @@ class _GachaScreenState extends State<GachaScreen> {
 
     final mp = Provider.of<MemberProvider>(context, listen: false);
     final cp = Provider.of<CollectionProvider>(context, listen: false);
+
+    RequestManager.requestMember(mp.id).then((member) {
+      mp.setAll(member);
+
+      final nowTimestamp = DateTime.now().millisecondsSinceEpoch;
+      if (mp.lastGachaTimestamp != null && mp.remainTicket != null) {
+        setState(() {
+          _remainTimeToGetTicket = mp.lastGachaTimestamp!;
+          _remainTicket = mp.remainTicket! - 1;
+
+          while (nowTimestamp > _remainTimeToGetTicket) {
+            _remainTicket++;
+            _remainTimeToGetTicket += 30 * 60 * 1000;
+          }
+
+          _remainTimeToGetTicket -= nowTimestamp;
+        });
+
+        startTimer();
+      }
+    }).catchError((exception) {
+      late AlertDialog dialog;
+
+      if (exception is HttpResponseException) {
+        if (exception.code == ErrorCode.serverError) {
+          dialog = AlertDialogManager.getExitAlertByServerError();
+        } else {
+          dialog = AlertDialogManager.getExitAlertByResourceError();
+        }
+      } else {
+        dialog = AlertDialogManager.getExitAlertByUnknownError();
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return dialog;
+            },
+          );
+        },
+      );
+    });
 
     if (cp.collection == null) {
       RequestManager.requestCollection(mp.id)
@@ -67,6 +114,7 @@ class _GachaScreenState extends State<GachaScreen> {
 
   @override
   void dispose() {
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -82,9 +130,37 @@ class _GachaScreenState extends State<GachaScreen> {
     });
   }
 
+  void startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_remainTimeToGetTicket > 0) {
+          _remainTimeToGetTicket -= 1000;
+        } else {
+          updateTicketAndRestartTimer();
+        }
+      });
+    });
+  }
+
+  void updateTicketAndRestartTimer() {
+    setState(() {
+      _remainTicket++;
+      _remainTimeToGetTicket = 30 * 60 * 1000;
+    });
+  }
+
+  String formatDuration(int milliseconds) {
+    final duration = Duration(milliseconds: milliseconds);
+    final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
   @override
   Widget build(BuildContext context) {
     Future<dynamic> drawCard() async {
+      if (_remainTicket <= 0) return null;
+
       final mp = Provider.of<MemberProvider>(context, listen: false);
       final cp = Provider.of<CollectionProvider>(context, listen: false);
 
@@ -92,6 +168,10 @@ class _GachaScreenState extends State<GachaScreen> {
       final collection = await RequestManager.requestCollection(mp.id);
 
       cp.setCollection(collection);
+
+      setState(() {
+        _remainTicket--;
+      });
 
       return card;
     }
@@ -109,17 +189,19 @@ class _GachaScreenState extends State<GachaScreen> {
             _turnOnDrawing();
             drawCard().then(
               (card) {
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (BuildContext context) => Dialog(
-                    backgroundColor: Colors.transparent,
-                    child: GachaCard(
-                      imageUrl: card['imageUrl'],
-                      seq: card['seq'],
+                if (card != null) {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) => Dialog(
+                      backgroundColor: Colors.transparent,
+                      child: GachaCard(
+                        imageUrl: card['imageUrl'],
+                        seq: card['seq'],
+                      ),
                     ),
-                  ),
-                );
+                  );
+                }
               },
             ).catchError((exception) {
               late AlertDialog dialog;
@@ -167,7 +249,32 @@ class _GachaScreenState extends State<GachaScreen> {
                 ),
         ),
         const SizedBox(height: 10),
-        const TicketTimer()
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 100),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.curtains_closed,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '$_remainTicket',
+                    style: const TextStyle(color: Colors.white, fontSize: 24),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 20),
+              Text(
+                formatDuration(_remainTimeToGetTicket),
+                style: const TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ],
+          ),
+        )
       ],
     );
   }
