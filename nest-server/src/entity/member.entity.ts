@@ -20,7 +20,7 @@ export class MemberEntity {
 
   draw() {
     const timestamp = new Date().getTime();
-    const ticket = (timestamp - this.lastGachaTimestamp) / (30 * 60 * 1000);
+    const ticket = Math.floor((timestamp - this.lastGachaTimestamp) / (30 * 60 * 1000));
 
     this.remainTicket = Math.max(0, this.remainTicket + ticket - 1);
     this.lastGachaTimestamp = timestamp;

@@ -22,7 +22,7 @@ export class MemberService {
       if (foundMember) {
         await this.memberRepository.restore({ id: foundMember.id });
 
-        foundMember.remainTicket = 5;
+        foundMember.remainTicket = 0;
         foundMember.lastGachaTimestamp = Date.now();
         foundMember.deletedAt = null;
 
@@ -42,7 +42,7 @@ export class MemberService {
     try {
       return await this.memberRepository.findOne({ where: { id } });
     } catch (error) {
-      throw new ServiceException(error, 'cannot save member');
+      throw new ServiceException(error, 'cannot find member');
     }
   }
 
