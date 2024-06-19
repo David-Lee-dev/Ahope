@@ -2,11 +2,9 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { PostgresErrorCode } from './errorCode.enum';
 
 export class ServiceException extends HttpException {
-  query: string;
-  responseMessage: string;
-  loggingMessage: string;
+  cause: Error;
 
-  constructor(error: Error, message?: string, query?: string) {
+  constructor(error: Error, message?: string) {
     switch ((error as any).code) {
       case PostgresErrorCode.UNIQUE_VIOLATION:
       case PostgresErrorCode.FOREIGN_KEY_VIOLATION:
@@ -18,10 +16,6 @@ export class ServiceException extends HttpException {
         break;
     }
 
-    this.query = query ?? null;
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
+    this.cause = error;
   }
 }

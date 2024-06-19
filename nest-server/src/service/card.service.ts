@@ -35,6 +35,11 @@ export class CardService {
 
       member.draw();
       metadata.increaseCount();
+
+      if (member.remainTicket < 0) {
+        throw new Error();
+      }
+
       const card: CardEntity = CardEntity.create(member, metadata);
 
       await queryRunner.manager.save(metadata);

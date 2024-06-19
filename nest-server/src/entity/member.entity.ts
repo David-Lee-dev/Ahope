@@ -9,6 +9,9 @@ export class MemberEntity {
   @Column({ unique: true })
   email: string;
 
+  @Column()
+  password: string;
+
   @Column({ name: 'last_gacha_timestamp', type: 'bigint', nullable: true })
   lastGachaTimestamp: number | null = null;
 
@@ -26,10 +29,17 @@ export class MemberEntity {
     this.lastGachaTimestamp = timestamp;
   }
 
-  static create(id: UUID | null, email: string, lastGachaTimestamp: number | null = null, remainTicket: number = 0) {
+  static create(
+    id: UUID | null,
+    email: string,
+    password: string,
+    lastGachaTimestamp: number | null = null,
+    remainTicket: number = 0,
+  ) {
     const member = new MemberEntity();
     if (id) member.id = id;
     member.email = email;
+    member.password = password;
     member.lastGachaTimestamp = lastGachaTimestamp;
     member.remainTicket = remainTicket;
 

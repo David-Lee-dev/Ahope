@@ -4,6 +4,7 @@ import { MemberEntity } from 'src/entity';
 import { ServiceException } from 'src/exception';
 import { DataSource, Repository } from 'typeorm';
 import { UUID } from 'crypto';
+import { MemberDto } from 'src/dto';
 
 @Injectable()
 export class MemberService {
@@ -15,32 +16,39 @@ export class MemberService {
     this.memberRepository = dataSource.getRepository(MemberEntity);
   }
 
-  async saveMember(member: MemberEntity): Promise<MemberEntity> {
+  async saveMember(member: MemberEntity): Promise<MemberDto> {
     try {
-      const foundMember = await this.memberRepository.findOne({ where: { email: member.email }, withDeleted: true });
+      const foundMember = await this.memberRepository.findOne({
+        where: { email: member.email },
+        withDeleted: true,
+      });
 
       if (foundMember) {
         await this.memberRepository.restore({ id: foundMember.id });
 
-        foundMember.remainTicket = 0;
+        foundMember.remainTicket = 10;
         foundMember.lastGachaTimestamp = Date.now();
         foundMember.deletedAt = null;
 
-        return await this.memberRepository.save(foundMember);
+        await this.memberRepository.save(foundMember);
+
+        return MemberDto.fromEntity(foundMember);
       } else {
-        member.remainTicket = 5;
+        member.remainTicket = 10;
         member.lastGachaTimestamp = Date.now();
 
-        return await this.memberRepository.save(member);
+        await this.memberRepository.save(member);
+        return MemberDto.fromEntity(member);
       }
     } catch (error) {
       throw new ServiceException(error, 'cannot save member');
     }
   }
 
-  async findMemberById(id: UUID): Promise<MemberEntity> {
+  async findMemberById(id: UUID): Promise<MemberDto> {
     try {
-      return await this.memberRepository.findOne({ where: { id } });
+      const member = await this.memberRepository.findOne({ where: { id } });
+      return MemberDto.fromEntity(member);
     } catch (error) {
       throw new ServiceException(error, 'cannot find member');
     }

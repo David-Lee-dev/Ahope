@@ -1,3 +1,5 @@
-import { CreateMemberDto } from './request/createMemberDto';
+import { CreateMemberDto } from './request/createMember.dto';
 
-export { CreateMemberDto };
+import { MemberDto } from './response/member.dto';
+
+export { CreateMemberDto, MemberDto };

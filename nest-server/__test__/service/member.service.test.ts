@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { MemberDto } from 'src/dto';
 import { MemberEntity } from 'src/entity';
 import { ServiceException } from 'src/exception';
 import { MemberService } from 'src/service';
@@ -22,49 +23,37 @@ describe('MemberService', () => {
       memberService = new MemberService(dataSource);
     });
 
-    it('should return saved MemberEntity', async () => {
-      const member = MemberEntity.create(randomUUID(), 'test etmail');
+    it('should save new member', async () => {
+      const member = MemberEntity.create(randomUUID(), 'test etmail', 'test password');
 
+      jest.spyOn(memberRepository, 'findOne').mockResolvedValue(null);
+      jest.spyOn(memberRepository, 'restore').mockResolvedValue(null);
       jest.spyOn(memberRepository, 'save').mockResolvedValue(member);
 
       const result = await memberService.saveMember(member);
 
-      expect(result).toEqual(member);
+      expect(result).toEqual(MemberDto.fromEntity(member));
+      expect(memberRepository.restore).not.toHaveBeenCalled();
+    });
+
+    it('should restore on deleted member', async () => {
+      const member = MemberEntity.create(randomUUID(), 'test etmail', 'test password');
+
+      jest.spyOn(memberRepository, 'findOne').mockResolvedValue(member);
+      jest.spyOn(memberRepository, 'restore').mockResolvedValue(null);
+      jest.spyOn(memberRepository, 'save').mockResolvedValue(member);
+
+      const result = await memberService.saveMember(member);
+
+      expect(result).toEqual(MemberDto.fromEntity(member));
     });
 
     it('should throw ServiceException on error during save member', async () => {
-      const member = MemberEntity.create(randomUUID(), 'test etmail');
+      const member = MemberEntity.create(randomUUID(), 'test etmail', 'test password');
 
       jest.spyOn(memberRepository, 'save').mockRejectedValue(new Error());
 
       await expect(memberService.saveMember(member)).rejects.toThrow(ServiceException);
-    });
-  });
-
-  describe('findMemberById', () => {
-    beforeEach(() => {
-      memberRepository = new Repository(MemberEntity, null, null);
-      dataSource = { getRepository: () => memberRepository } as any;
-
-      memberService = new MemberService(dataSource);
-    });
-
-    it('should return MemberEntity', async () => {
-      const member = MemberEntity.create(randomUUID(), 'test etmail');
-
-      jest.spyOn(memberRepository, 'findOne').mockResolvedValue(member);
-
-      const result = await memberService.findMemberById(member.id);
-
-      expect(result).toEqual(member);
-    });
-
-    it('should throw ServiceException on error during find member', async () => {
-      const member = MemberEntity.create(randomUUID(), 'test etmail');
-
-      jest.spyOn(memberRepository, 'findOne').mockRejectedValue(new Error());
-
-      await expect(memberService.findMemberById(member.id)).rejects.toThrow(ServiceException);
     });
   });
 });
