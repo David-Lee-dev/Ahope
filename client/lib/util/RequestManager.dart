@@ -10,7 +10,7 @@ typedef Res = http.Response;
 class RequestManager {
   static const String _baseUrl = "http://localhost:3000";
 
-  static Future<Member> requestJoin(String email) async {
+  static Future<Member> requestJoin(String email, String password) async {
     Res response = await http.post(
       _getUrl('/api/member'),
       headers: <String, String>{
@@ -19,6 +19,7 @@ class RequestManager {
       body: jsonEncode(
         <String, String>{
           'email': email,
+          'password': password,
         },
       ),
     );

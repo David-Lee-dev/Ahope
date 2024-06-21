@@ -2,7 +2,7 @@ import 'package:client/provider/collection.provider.dart';
 import 'package:client/provider/member.provider.dart';
 import 'package:client/screen/collection.screen.dart';
 import 'package:client/screen/gacha.screen.dart';
-import 'package:client/screen/login.screen.dart';
+import 'package:client/screen/landing.screen.dart';
 import 'package:client/screen/settings.screen.dart';
 import 'package:client/util/DiskStorageManager.util.dart';
 import 'package:client/widget/bottom_nav/bottomNav.widget.dart';
@@ -86,7 +86,7 @@ class _AppState extends State<App> {
             scaffoldBackgroundColor: const Color(0xff051732),
           ),
           home: member.id == null
-              ? const LoginScreen()
+              ? const LandingScreen()
               : Scaffold(
                   body: PageView(
                     controller: _pageController,

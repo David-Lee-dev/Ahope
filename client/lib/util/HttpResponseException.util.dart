@@ -10,8 +10,14 @@ class HttpResponseException implements Exception {
       case 400:
         code = ErrorCode.badRequest;
         break;
+      case 403:
+        code = ErrorCode.unauthorized;
+        break;
       case 404:
         code = ErrorCode.notFound;
+        break;
+      case 409:
+        code = ErrorCode.conflict;
         break;
       default:
         code = ErrorCode.serverError;

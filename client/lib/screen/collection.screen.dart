@@ -1,8 +1,7 @@
-import 'package:client/enum/errorCode.enum.dart';
 import 'package:client/model/collection.model.dart';
 import 'package:client/provider/collection.provider.dart';
 import 'package:client/provider/member.provider.dart';
-import 'package:client/util/HttpResponseException.util.dart';
+import 'package:client/util/AlertDialogManager.util.dart';
 import 'package:client/util/RequestManager.dart';
 import 'package:client/util/TopRightClipper.util.dart';
 import 'package:client/widget/card/collectionCard.widget.dart';
@@ -55,64 +54,9 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
     RequestManager.requestCollection(mp.id)
         .then((collection) => cp.setCollection(collection))
-        .catchError(
-      (exception) {
-        late Text alertTitle;
-        late List<Text> alertContents;
-        late List<TextButton> buttons;
-
-        if (exception is HttpResponseException) {
-          if (exception.code == ErrorCode.serverError) {
-            alertTitle = const Text('새로고침에 실패했습니다.');
-            alertContents = [
-              const Text('서버와 통신할 수 없습니다.'),
-              const Text('다시 시도해주세요.')
-            ];
-            buttons = [
-              TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('확인'))
-            ];
-          } else {
-            alertTitle = const Text('새로고침에 실패했습니다.');
-            alertContents = [const Text('다시 시도해주세요.')];
-            buttons = [
-              TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('확인'))
-            ];
-          }
-        } else {
-          alertTitle = const Text('새로고침에 실패했습니다.');
-          alertContents = [
-            const Text('알 수 없는 오류가 발생했습니다.'),
-            const Text('빠른 시일 내로 복구하겠습니다. 사용에 불편을 드려 죄송합니다.')
-          ];
-          buttons = [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('확인'))
-          ];
-        }
-
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) {
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: alertTitle,
-                  content: SingleChildScrollView(
-                      child: ListBody(children: alertContents)),
-                  actions: buttons,
-                );
-              },
-            );
-          },
-        );
-      },
-    ).whenComplete(() {
+        .catchError((exception) =>
+            AlertDialogManager.handleFetchCollectionError(exception, context))
+        .whenComplete(() {
       setState(() {
         _isRefreshing = false;
       });

@@ -1,10 +1,9 @@
 import 'dart:async';
 
-import 'package:client/enum/errorCode.enum.dart';
 import 'package:client/enum/requestMethod.enum.dart';
 import 'package:client/provider/collection.provider.dart';
 import 'package:client/provider/member.provider.dart';
-import 'package:client/util/AlertMessageManager.util.dart';
+import 'package:client/util/AlertDialogManager.util.dart';
 import 'package:client/util/HttpResponseException.util.dart';
 import 'package:client/util/RequestManager.dart';
 import 'package:client/widget/card/gachaCard.widget.dart';
@@ -22,8 +21,8 @@ class GachaScreen extends StatefulWidget {
 
 class _GachaScreenState extends State<GachaScreen> {
   bool _isDrawing = false;
-  int _remainTimeToGetTicket = 0;
-  int _remainTicket = 30 * 60 * 1000;
+  int _remainTimeToGetTicket = 30 * 60 * 1000;
+  int _remainTicket = 0;
   Timer? _timer;
 
   @override
@@ -52,63 +51,15 @@ class _GachaScreenState extends State<GachaScreen> {
 
         startTimer();
       }
-    }).catchError((exception) {
-      late AlertDialog dialog;
-
-      if (exception is HttpResponseException) {
-        if (exception.code == ErrorCode.serverError) {
-          dialog = AlertDialogManager.getExitAlertByServerError();
-        } else {
-          dialog = AlertDialogManager.getExitAlertByResourceError();
-        }
-      } else {
-        dialog = AlertDialogManager.getExitAlertByUnknownError();
-      }
-
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext context) {
-              return dialog;
-            },
-          );
-        },
-      );
-    });
+    }).catchError((exception) =>
+        AlertDialogManager.handleFetchMember(exception, context));
 
     if (cp.collection == null) {
       RequestManager.requestCollection(mp.id)
           .then((collection) => cp.setCollection(collection))
-          .catchError(
-        (exception) {
-          late AlertDialog dialog;
-
-          if (exception is HttpResponseException) {
-            if (exception.code == ErrorCode.serverError) {
-              dialog = AlertDialogManager.getExitAlertByServerError();
-            } else {
-              dialog = AlertDialogManager.getNeedRefreshAlertByResourceError(
-                  context);
-            }
-          } else {
-            dialog = AlertDialogManager.getExitAlertByServerError();
-          }
-
-          WidgetsBinding.instance.addPostFrameCallback(
-            (_) {
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (BuildContext context) {
-                  return dialog;
-                },
-              );
-            },
-          );
-        },
-      );
+          .catchError((exception) =>
+              AlertDialogManager.handleFetchCollectionError(
+                  exception, context));
     }
   }
 
@@ -204,36 +155,15 @@ class _GachaScreenState extends State<GachaScreen> {
                 }
               },
             ).catchError((exception) {
-              late AlertDialog dialog;
-
               if (exception is HttpResponseException) {
                 if (exception.method == RequestMethod.post) {
-                  if (exception.code == ErrorCode.serverError) {
-                    dialog = AlertDialogManager.getCannotDrawAlertByServerError(
-                        context);
-                  } else {
-                    dialog =
-                        AlertDialogManager.getRetryToDrawAlertByServerError(
-                            context);
-                  }
+                  AlertDialogManager.handleDrawCard(exception, context);
                 }
 
                 if (exception.method == RequestMethod.get) {
-                  dialog =
-                      AlertDialogManager.getNeedRefreshAlertByResourceError(
-                          context);
+                  AlertDialogManager.handleFetchMember(exception, context);
                 }
-              } else {
-                dialog = AlertDialogManager.getCannotDrawAlertByUnknwonError();
               }
-
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (BuildContext context) {
-                  return dialog;
-                },
-              );
             }).whenComplete(() {
               _turnOffDrawing();
             });
@@ -250,7 +180,7 @@ class _GachaScreenState extends State<GachaScreen> {
         ),
         const SizedBox(height: 10),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 100),
+          padding: const EdgeInsets.symmetric(horizontal: 70),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -260,7 +190,7 @@ class _GachaScreenState extends State<GachaScreen> {
                     Icons.curtains_closed,
                     color: Colors.white,
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 5),
                   Text(
                     '$_remainTicket',
                     style: const TextStyle(color: Colors.white, fontSize: 24),

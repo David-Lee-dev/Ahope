@@ -3,4 +3,5 @@ enum ErrorCode {
   unauthorized,
   badRequest,
   serverError,
+  conflict,
 }
