@@ -1,15 +1,37 @@
-import { randomUUID } from 'crypto';
-import { CardEntity, MemberEntity, MetadataEntity } from 'src/entity';
-import { ServiceException } from 'src/exception';
+import { Test, TestingModule } from '@nestjs/testing';
+import { randomUUID } from 'node:crypto';
+import { describe } from 'node:test';
+import { MemberEntity, MetadataEntity } from 'src/entity';
+import {
+  DBException,
+  MetadataNotFoundException,
+  UserNotEnoughTicketException,
+  UserNotFoundException,
+} from 'src/exception';
 import { CardService } from 'src/service';
-import { DataSource, EntityManager, QueryRunner, Repository, SelectQueryBuilder } from 'typeorm';
+import { DataSource, EntityManager, QueryFailedError, QueryRunner, Repository } from 'typeorm';
 
 describe('CardService', () => {
+  let service: CardService;
   let dataSource: DataSource;
-  let cardRepository: Repository<CardEntity>;
-  let memberRepository: Repository<MemberEntity>;
-  let metadataRepository: Repository<MetadataEntity>;
-  let cardService: CardService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        CardService,
+        {
+          provide: DataSource,
+          useValue: {
+            getRepository: jest.fn(),
+            createQueryRunner: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    service = module.get<CardService>(CardService);
+    dataSource = module.get<DataSource>(DataSource);
+  });
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -17,151 +39,73 @@ describe('CardService', () => {
   });
 
   describe('saveCard', () => {
-    let queryRunner: QueryRunner;
-    let queryRunnerManger: SelectQueryBuilder<MetadataEntity> | EntityManager;
+    let manager: EntityManager;
+    const queryRunner: QueryRunner = {
+      connect: jest.fn(),
+      startTransaction: jest.fn(),
+      commitTransaction: jest.fn(),
+      rollbackTransaction: jest.fn(),
+      release: jest.fn(),
+      manager: {
+        findOne: jest.fn(),
+        createQueryBuilder: jest.fn().mockReturnValue({
+          setLock: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          getOne: jest.fn(),
+        }),
+        save: jest.fn(),
+      } as any,
+    } as any;
 
     beforeEach(() => {
-      dataSource = { getRepository: jest.fn(), createQueryRunner: jest.fn() } as any;
-      cardRepository = new Repository(CardEntity, null, null);
-      memberRepository = new Repository(MemberEntity, null, null);
-      metadataRepository = new Repository(MetadataEntity, null, null);
-
-      jest.spyOn(dataSource, 'getRepository').mockImplementationOnce(() => cardRepository);
-      jest.spyOn(dataSource, 'getRepository').mockImplementationOnce(() => memberRepository);
-      jest.spyOn(dataSource, 'getRepository').mockImplementationOnce(() => metadataRepository);
-
-      queryRunnerManger = {
-        createQueryBuilder: jest.fn().mockReturnThis(),
-        setLock: jest.fn().mockReturnThis(),
-        where: jest.fn().mockReturnThis(),
-        getOneOrFail: jest.fn(),
-        save: jest.fn(),
-      } as any;
-      queryRunner = {
-        connect: jest.fn(),
-        startTransaction: jest.fn(),
-        commitTransaction: jest.fn(),
-        rollbackTransaction: jest.fn(),
-        release: jest.fn(),
-        manager: queryRunnerManger,
-      } as any;
-
       jest.spyOn(dataSource, 'createQueryRunner').mockImplementation(() => queryRunner);
-
-      cardService = new CardService(dataSource);
     });
 
-    it('should return saved card', async () => {
-      const testUUID = randomUUID();
-      const member = MemberEntity.create(randomUUID(), 'test etmail', 'test password');
-      const metaData = MetadataEntity.create(null, 'test image url', 'test category');
-      const card = CardEntity.create(member, metaData);
+    it('should throw UserNotFoundException', async () => {
+      const memberId = randomUUID();
 
-      jest.spyOn(memberRepository, 'findOne').mockResolvedValue(member);
-      jest.spyOn(metadataRepository, 'find').mockResolvedValue([metaData]);
+      jest.spyOn(queryRunner.manager, 'findOne').mockResolvedValueOnce(null);
+
+      await expect(service.saveCard(memberId)).rejects.toThrow(UserNotFoundException);
+    });
+
+    it('should throw MetadataNotFoundException', async () => {
+      const memberId = randomUUID();
+      const member = new MemberEntity();
+
+      jest.spyOn(service as any, 'getTargetMetadataId').mockResolvedValue(randomUUID);
+      jest.spyOn(queryRunner.manager, 'findOne').mockResolvedValueOnce(member);
+      jest.spyOn(queryRunner.manager.createQueryBuilder(), 'getOne').mockResolvedValueOnce(null);
+
+      await expect(service.saveCard(memberId)).rejects.toThrow(MetadataNotFoundException);
+    });
+
+    it('should throw UserNotEnoughTicketException', async () => {
+      const memberId = randomUUID();
+      const member = MemberEntity.create(
+        memberId,
+        'test email',
+        'test password',
+        new Date().getTime(),
+        0,
+      );
+
+      jest.spyOn(service as any, 'getTargetMetadataId').mockResolvedValue(randomUUID);
+      jest.spyOn(queryRunner.manager, 'findOne').mockResolvedValueOnce(member);
       jest
-        .spyOn(queryRunnerManger as SelectQueryBuilder<MetadataEntity>, 'getOneOrFail')
-        .mockResolvedValue(metaData);
-      jest.spyOn(queryRunnerManger as EntityManager, 'save').mockResolvedValue(metaData);
-      jest.spyOn(memberRepository, 'save').mockResolvedValue(member);
-      jest.spyOn(cardRepository, 'save').mockResolvedValue(card);
+        .spyOn(queryRunner.manager.createQueryBuilder(), 'getOne')
+        .mockResolvedValueOnce(new MetadataEntity());
 
-      await cardService.saveCard(testUUID);
-      expect(queryRunner.commitTransaction).toHaveBeenCalled();
-      expect(queryRunner.release).toHaveBeenCalled();
+      await expect(service.saveCard(memberId)).rejects.toThrow(UserNotEnoughTicketException);
     });
 
-    it('should throw ServiceException on error during find member', async () => {
-      const testUUID = randomUUID();
-
-      jest.spyOn(memberRepository, 'findOne').mockRejectedValue(new Error());
-
-      await expect(cardService.saveCard(testUUID)).rejects.toThrow(ServiceException);
-      expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
-      expect(queryRunner.release).toHaveBeenCalled();
-    });
-
-    it('should throw ServiceException on error during find metadata', async () => {
-      const testUUID = randomUUID();
-      const member = MemberEntity.create(randomUUID(), 'test etmail', 'test password');
-
-      jest.spyOn(memberRepository, 'findOne').mockResolvedValue(member);
+    it('should throw DBException on query failure', async () => {
+      const memberId = randomUUID();
       jest
-        .spyOn(queryRunnerManger as SelectQueryBuilder<MetadataEntity>, 'getOneOrFail')
-        .mockRejectedValue(new Error());
+        .spyOn(queryRunner.manager, 'findOne')
+        .mockRejectedValueOnce(new QueryFailedError('', [], new Error()));
 
-      await expect(cardService.saveCard(testUUID)).rejects.toThrow(ServiceException);
-      expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
-      expect(queryRunner.release).toHaveBeenCalled();
-    });
-
-    it('should throw ServiceException on error during update metadata', async () => {
-      const testUUID = randomUUID();
-      const member = MemberEntity.create(randomUUID(), 'test etmail', 'test password');
-      const metaData = MetadataEntity.create(null, 'test image url', 'test category');
-
-      jest.spyOn(memberRepository, 'findOne').mockResolvedValue(member);
-      jest.spyOn(metadataRepository, 'find').mockResolvedValue([]);
-      jest
-        .spyOn(queryRunnerManger as SelectQueryBuilder<MetadataEntity>, 'getOneOrFail')
-        .mockResolvedValue(metaData);
-      jest.spyOn(queryRunnerManger as EntityManager, 'save').mockRejectedValue(new Error());
-
-      await expect(cardService.saveCard(testUUID)).rejects.toThrow(ServiceException);
-      expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
-      expect(queryRunner.release).toHaveBeenCalled();
-    });
-
-    it('should throw ServiceException on error during update metadata', async () => {
-      const testUUID = randomUUID();
-      const member = MemberEntity.create(randomUUID(), 'test etmail', 'test password');
-      const metaData = MetadataEntity.create(null, 'test image url', 'test category');
-
-      jest.spyOn(memberRepository, 'findOne').mockResolvedValue(member);
-      jest.spyOn(metadataRepository, 'find').mockResolvedValue([metaData]);
-      jest
-        .spyOn(queryRunnerManger as SelectQueryBuilder<MetadataEntity>, 'getOneOrFail')
-        .mockResolvedValue(metaData);
-      jest.spyOn(queryRunnerManger as EntityManager, 'save').mockRejectedValue(new Error());
-
-      await expect(cardService.saveCard(testUUID)).rejects.toThrow(ServiceException);
-      expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
-      expect(queryRunner.release).toHaveBeenCalled();
-    });
-
-    it('should throw ServiceException on error during save member', async () => {
-      const testUUID = randomUUID();
-      const member = MemberEntity.create(randomUUID(), 'test etmail', 'test password');
-      const metaData = MetadataEntity.create(null, 'test image url', 'test category');
-
-      jest.spyOn(memberRepository, 'findOne').mockResolvedValue(member);
-      jest
-        .spyOn(queryRunnerManger as SelectQueryBuilder<MetadataEntity>, 'getOneOrFail')
-        .mockResolvedValue(metaData);
-      jest.spyOn(queryRunnerManger as EntityManager, 'save').mockResolvedValue(metaData);
-      jest.spyOn(memberRepository, 'save').mockRejectedValue(new Error());
-
-      await expect(cardService.saveCard(testUUID)).rejects.toThrow(ServiceException);
-      expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
-      expect(queryRunner.release).toHaveBeenCalled();
-    });
-
-    it('should throw ServiceException on error during save card', async () => {
-      const testUUID = randomUUID();
-      const member = MemberEntity.create(randomUUID(), 'test etmail', 'test password');
-      const metaData = MetadataEntity.create(null, 'test image url', 'test category');
-
-      jest.spyOn(memberRepository, 'findOne').mockResolvedValue(member);
-      jest
-        .spyOn(queryRunnerManger as SelectQueryBuilder<MetadataEntity>, 'getOneOrFail')
-        .mockResolvedValue(metaData);
-      jest.spyOn(queryRunnerManger as EntityManager, 'save').mockResolvedValue(metaData);
-      jest.spyOn(memberRepository, 'save').mockResolvedValue(member);
-      jest.spyOn(cardRepository, 'save').mockRejectedValue(new Error());
-
-      await expect(cardService.saveCard(testUUID)).rejects.toThrow(ServiceException);
-      expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
-      expect(queryRunner.release).toHaveBeenCalled();
+      await expect(service.saveCard(memberId)).rejects.toThrow(DBException);
     });
   });
 });

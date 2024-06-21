@@ -2,9 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { UUID } from 'crypto';
 import { CardEntity, MemberEntity, MetadataEntity } from 'src/entity';
-import { ServiceException } from 'src/exception';
+import {
+  DBException,
+  MetadataNotFoundException,
+  UserNotEnoughTicketException,
+  UserNotFoundException,
+} from 'src/exception';
 import { Card, Category, MetadataAttributes, MetadataByCategory, MetadataID } from 'src/types';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { DataSource, QueryFailedError, QueryRunner, Repository } from 'typeorm';
 
 @Injectable()
 export class CardService {
@@ -13,8 +18,6 @@ export class CardService {
   private metadataRepository: Repository<MetadataEntity>;
 
   constructor(@InjectDataSource() private dataSource: DataSource) {
-    if (!dataSource) throw new Error('data source is rquired');
-
     this.cardRepository = dataSource.getRepository(CardEntity);
     this.memberRepository = dataSource.getRepository(MemberEntity);
     this.metadataRepository = dataSource.getRepository(MetadataEntity);
@@ -26,31 +29,46 @@ export class CardService {
     await queryRunner.startTransaction();
 
     try {
-      const member: MemberEntity = await this.memberRepository.findOne({ where: { id: memberId } });
+      const member: MemberEntity = await queryRunner.manager.findOne(MemberEntity, {
+        where: { id: memberId },
+      });
+
+      if (!member) {
+        throw new UserNotFoundException();
+      }
+
       const metadata: MetadataEntity = await queryRunner.manager
         .createQueryBuilder(MetadataEntity, 'metadata')
         .setLock('pessimistic_read')
         .where({ id: await this.getTargetMetadataId() })
-        .getOneOrFail();
+        .getOne();
+
+      if (!metadata) {
+        throw new MetadataNotFoundException();
+      }
 
       member.draw();
       metadata.increaseCount();
-
       if (member.remainTicket < 0) {
-        throw new Error();
+        throw new UserNotEnoughTicketException();
       }
 
       const card: CardEntity = CardEntity.create(member, metadata);
-
       await queryRunner.manager.save(metadata);
-      await this.memberRepository.save(member);
-      await this.cardRepository.save(card);
+      await queryRunner.manager.save(member);
+      await queryRunner.manager.save(card);
+
       await queryRunner.commitTransaction();
 
       return card;
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new ServiceException(error);
+
+      if (error instanceof QueryFailedError) {
+        throw new DBException();
+      }
+
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -61,7 +79,9 @@ export class CardService {
       Category,
       Map<MetadataID, MetadataAttributes>
     > = await this.initializeCategorizedCardMap();
-    (await this.findCardsByMember(memberId)).forEach(card => this.updateCategorizedCardMap(categorizedCardMap, card));
+    (await this.findCardsByMember(memberId)).forEach(card =>
+      this.updateCategorizedCardMap(categorizedCardMap, card),
+    );
 
     const sortedCategoryList = [];
     Array.from(categorizedCardMap.entries())
@@ -77,7 +97,10 @@ export class CardService {
         const metadataList = Array.from(metadataMap.values());
 
         metadataList
-          .sort((metadata1: MetadataAttributes, metadata2: MetadataAttributes) => metadata2.weight - metadata1.weight)
+          .sort(
+            (metadata1: MetadataAttributes, metadata2: MetadataAttributes) =>
+              metadata2.weight - metadata1.weight,
+          )
           .forEach((metaDataAttributes: MetadataAttributes) => {
             if (metaDataAttributes.cards) {
               metaDataAttributes.cards.sort((card1, card2) => card1.seq - card2.seq);
@@ -164,7 +187,9 @@ export class CardService {
     return metadataList[0].id as UUID;
   }
 
-  private async initializeCategorizedCardMap(): Promise<Map<Category, Map<MetadataID, MetadataAttributes>>> {
+  private async initializeCategorizedCardMap(): Promise<
+    Map<Category, Map<MetadataID, MetadataAttributes>>
+  > {
     const categorizedCardMap = new Map<Category, Map<UUID, MetadataAttributes>>();
     const metadataByCategory: MetadataByCategory[] = await this.findMetadatasByCategory();
 
@@ -198,7 +223,8 @@ export class CardService {
     const metadataId = card.metadata;
 
     if (categorizedCardMap.has(category)) {
-      const cardsByMetadataOfCategory: Map<MetadataID, MetadataAttributes> = categorizedCardMap.get(category);
+      const cardsByMetadataOfCategory: Map<MetadataID, MetadataAttributes> =
+        categorizedCardMap.get(category);
 
       if (cardsByMetadataOfCategory.has(metadataId)) {
         const metaDataAttributes: MetadataAttributes = cardsByMetadataOfCategory.get(metadataId);

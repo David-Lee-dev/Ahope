@@ -11,7 +11,7 @@ export class LoggingService {
     this.logger.error(
       `[ERROR] ERROR ${error.message} ${method} ${endpoint} | ${processingTimeMs}ms`,
     );
-    this.logger.error(error.cause?.stack ?? error.stack);
+    this.logger.error(error.stack);
   }
 
   warn(method: string, endpoint: string, processingTimeMs: number) {
